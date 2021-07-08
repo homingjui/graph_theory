@@ -55,17 +55,7 @@ def sort(n):
 G = nx.Graph()
 for i in range(1,6):
     G.add_node(i)
-G.add_edge(1,2)
-G.add_edge(1,5)
-G.add_edge(1,6)
-G.add_edge(2,4)
-G.add_edge(2,5)
-G.add_edge(3,4)
-G.add_edge(3,5)
-G.add_edge(3,6)
-G.add_edge(4,6)
-
-# G.add_edge(6,2)
+# G.add_edge(1,2)
 # G.add_edge(1,5)
 # G.add_edge(1,6)
 # G.add_edge(2,4)
@@ -73,7 +63,17 @@ G.add_edge(4,6)
 # G.add_edge(3,4)
 # G.add_edge(3,5)
 # G.add_edge(3,6)
-# G.add_edge(4,1)
+# G.add_edge(4,6)
+
+G.add_edge(6,2)
+G.add_edge(1,5)
+G.add_edge(1,6)
+G.add_edge(2,4)
+G.add_edge(2,5)
+G.add_edge(3,4)
+G.add_edge(3,5)
+G.add_edge(3,6)
+G.add_edge(4,1)
 
 
 edge_list=[ list(i) for i in list(G.edges)]
@@ -131,8 +131,6 @@ for i in range(len(result)):
 
 print("filter result: %d"%len(result))
 # print("filter result: %d"%len(result_z))
-with open("test.txt", "wb") as file:
-     pickle.dump(result.tolist(), file)
 
 # for i in range(len(result)):
 #     print "%d:"%(i+1),
@@ -145,57 +143,73 @@ with open("test.txt", "wb") as file:
 #     print "\n"
 
 #######################################edge switching
-# all_new_g =[]
-# check_g = 0
-# print "for this graph",result[check_g].tolist()
-# # print result[check_g].tolist()
-# for i in range(len(result[check_g])):
-#     edges_on_node =  np.unique(result[check_g,np.where((result[check_g]==result[check_g,i,0])  | (result[check_g]==result[check_g,i,1]))[0]],axis=0)
-#     if len(np.unique(edges_on_node))!=6:
-#         # print "[%d %d] 5 point edge"%(result[check_g,i,0],result[check_g,i,1])
-#         continue
-#     del_n = np.where((edges_on_node==result[check_g,i]).all(axis=1))[0]
-#     edges_on_node = np.delete(edges_on_node, del_n,axis=0)
-#     edges_on_node_a = edges_on_node[np.where(edges_on_node==result[check_g,i,0])[0]]
-#     edges_on_node_b = edges_on_node[np.where(edges_on_node==result[check_g,i,1])[0]]
-#
-#     print "(u, v) ",
-#     print result[check_g,i]
-#     for j in range(len(edges_on_node_b)):
-#         # print result[check_g,i]
-#         # print edges_on_node_a[0],
-#         # print edges_on_node_b[j]
-#         new_g = np.array(result[check_g])
-#
-#         change_index = np.where((new_g[:,0] == edges_on_node_a[0,0]) & (new_g[:,1]==edges_on_node_a[0,1]))[0][0]
-#         new_g[change_index][new_g[change_index]==result[check_g,i,0]] = result[check_g,i,1]
-#
-#         change_index = np.where((new_g[:,0] == edges_on_node_b[j,0]) & (new_g[:,1]==edges_on_node_b[j,1]))[0][0]
-#         new_g[change_index][new_g[change_index]==result[check_g,i,1]] = result[check_g,i,0]
-#         # new_g = sort(new_g)
-#
-#         print "switch edges:",
-#         # print edges_on_node_a[0],
-#         # print edges_on_node_b[j],
-#         if len(np.where(np.all(result == sort(new_g), axis=(1,2)))[0]) == 0:
-#             # print "-> new graph!"
-#             # print sort(new_g)
-#             all_new_g.append(sort(new_g))
-#         # else:
-#         #     print "-> already exists"
-#         # print new_g.tolist()
-#     # print ""
-#
-# print all_new_g
+all_new_g =[]
+check_g = 0
+print "for this graph",result[check_g].tolist()
+# print result[check_g].tolist()
+for i in range(len(result[check_g])):
+    edges_on_node =  np.unique(result[check_g,np.where((result[check_g]==result[check_g,i,0])  | (result[check_g]==result[check_g,i,1]))[0]],axis=0)
+    if len(np.unique(edges_on_node))!=6:
+        # print "[%d %d] 5 point edge"%(result[check_g,i,0],result[check_g,i,1])
+        continue
+    del_n = np.where((edges_on_node==result[check_g,i]).all(axis=1))[0]
+    edges_on_node = np.delete(edges_on_node, del_n,axis=0)
+    edges_on_node_a = edges_on_node[np.where(edges_on_node==result[check_g,i,0])[0]]
+    edges_on_node_b = edges_on_node[np.where(edges_on_node==result[check_g,i,1])[0]]
 
+    print "(u, v) ",
+    print result[check_g,i]
+    for j in range(len(edges_on_node_b)):
+        # print result[check_g,i]
+        # print edges_on_node_a[0],
+        # print edges_on_node_b[j]
+        new_g = np.array(result[check_g])
+
+        change_index = np.where((new_g[:,0] == edges_on_node_a[0,0]) & (new_g[:,1]==edges_on_node_a[0,1]))[0][0]
+        new_g[change_index][new_g[change_index]==result[check_g,i,0]] = result[check_g,i,1]
+
+        change_index = np.where((new_g[:,0] == edges_on_node_b[j,0]) & (new_g[:,1]==edges_on_node_b[j,1]))[0][0]
+        new_g[change_index][new_g[change_index]==result[check_g,i,1]] = result[check_g,i,0]
+        # new_g = sort(new_g)
+
+        print "switch edges:",
+        print edges_on_node_a[0],
+        print edges_on_node_b[j],
+        if len(np.where(np.all(result == sort(new_g), axis=(1,2)))[0]) == 0:
+            print "-> new graph!"
+            print sort(new_g)
+            all_new_g.append(sort(new_g))
+        else:
+            print "-> already exists"
+            print sort(new_g)
+    print ""
+
+all_new_g = np.array(all_new_g)
+for i in range(len(all_new_g)):
+    if i ==  len(all_new_g):
+        break
+    same_index = np.where(np.all(all_new_g == all_new_g[i], axis=(1,2)))[0]
+    # print same_index
+    all_new_g = np.delete(all_new_g,same_index[1:],0)
+
+for i in range(len(all_new_g)):
+    print "%d:"%(i+1),
+    # for j in  range(len(n_array[i])):
+        # print "f(%d)=%d"%(j+1,n_array[i][j]+1),
+    # print ""
+    for j in  all_new_g[i]:
+        print "[%d, %d]"%(j[0],j[1]),
+    print "\n"
 ###########################find the same
-# check = [[[1, 4], [1, 5], [1, 6], [2, 4], [2, 5], [2, 6], [3, 4], [3, 5], [3, 6]], [[1, 3], [1, 5], [1, 6], [2, 3], [2, 5], [2, 6], [3, 4], [4, 5], [4, 6]], [[1, 3], [1, 4], [1, 6], [2, 3], [2, 4], [2, 6], [3, 5], [4, 5], [5, 6]], [[1, 3], [1, 4], [1, 5], [2, 3], [2, 4], [2, 5], [3, 6], [4, 6], [5, 6]], [[1, 2], [1, 5], [1, 6], [2, 3], [2, 4], [3, 5], [3, 6], [4, 5], [4, 6]], [[1, 2], [1, 4], [1, 6], [2, 3], [2, 5], [3, 4], [3, 6], [4, 5], [5, 6]], [[1, 2], [1, 4], [1, 5], [2, 3], [2, 6], [3, 4], [3, 5], [4, 6], [5, 6]], [[1, 2], [1, 3], [1, 6], [2, 4], [2, 5], [3, 4], [3, 5], [4, 6], [5, 6]], [[1, 2], [1, 3], [1, 5], [2, 4], [2, 6], [3, 4], [3, 6], [4, 5], [5, 6]], [[1, 2], [1, 3], [1, 4], [2, 5], [2, 6], [3, 5], [3, 6], [4, 5], [4, 6]]]
-#
-# for i in check:
-#     print np.where(np.all(result == i, axis=(1,2)))[0]
+check = [[[1, 4], [1, 5], [1, 6], [2, 4], [2, 5], [2, 6], [3, 4], [3, 5], [3, 6]], [[1, 3], [1, 5], [1, 6], [2, 3], [2, 5], [2, 6], [3, 4], [4, 5], [4, 6]], [[1, 3], [1, 4], [1, 6], [2, 3], [2, 4], [2, 6], [3, 5], [4, 5], [5, 6]], [[1, 3], [1, 4], [1, 5], [2, 3], [2, 4], [2, 5], [3, 6], [4, 6], [5, 6]], [[1, 2], [1, 5], [1, 6], [2, 3], [2, 4], [3, 5], [3, 6], [4, 5], [4, 6]], [[1, 2], [1, 4], [1, 6], [2, 3], [2, 5], [3, 4], [3, 6], [4, 5], [5, 6]], [[1, 2], [1, 4], [1, 5], [2, 3], [2, 6], [3, 4], [3, 5], [4, 6], [5, 6]], [[1, 2], [1, 3], [1, 6], [2, 4], [2, 5], [3, 4], [3, 5], [4, 6], [5, 6]], [[1, 2], [1, 3], [1, 5], [2, 4], [2, 6], [3, 4], [3, 6], [4, 5], [5, 6]], [[1, 2], [1, 3], [1, 4], [2, 5], [2, 6], [3, 5], [3, 6], [4, 5], [4, 6]]]
+
+for i in check:
+    print np.where(np.all(result == i, axis=(1,2)))[0]
 
 
-
+# with open("order4_new_graph_order4_new_graph_12.txt", "wb") as file:
+#      pickle.dump(all_new_g.tolist(), file)
+     # pickle.dump(result.tolist(), file)
 
 # print("")
 # print(G.nodes)
