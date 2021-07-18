@@ -53,6 +53,7 @@ def sort(n):
     return x
 
 G = nx.Graph()
+
 for i in range(1,6):
     G.add_node(i)
 G.add_edge(1,2)
@@ -102,7 +103,7 @@ for now_iteration in range(iterations):
         for j in range(i+1,len(new_edge_list)):
             # y *= float(X_cal(new_edge_list[i])-X_cal(new_edge_list[j]))/(X_cal(edge_list[i])-X_cal(edge_list[j]))
             y *= float(X_cal(new_edge_list[i])-X_cal(new_edge_list[j]))/(edge_list_X[i]-edge_list_X[j])
-    result_z.append(round(y,5))
+    result_z.append(y)
     result.append(sort(new_edge_list))
 
 
