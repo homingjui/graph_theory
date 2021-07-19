@@ -54,7 +54,7 @@ def sort(n):
     return x
 
 ###############################################parm
-n_orders = 4
+nodes = 8
 
 ##############################################parm-end
 # G = nx.Graph()
@@ -75,74 +75,66 @@ n_orders = 4
 # edge_list=[ list(i) for i in list(G.edges)]
 edge_list_array=[[[1, 2], [1, 5], [1, 8], [2, 3], [2, 6], [3, 4], [3, 7], [4, 5], [4, 8], [5, 6], [6, 7], [7, 8]],
                                     [[1, 2], [1, 5], [1, 8], [2, 3], [2, 6], [3, 4], [3, 7], [4, 5], [1, 6], [2, 5], [3, 8], [4, 7]]]
-edge_list=sort(edge_list)
-edge_list_X = [X_cal(i) for i in edge_list]
+edge_list_X_array = []
+
+# edge_list=sort(edge_list)
+#edge_list_X
+for i in range(len(edge_list_array)):
+    edge_list_array[i]=sort(edge_list_array[i])
+    edge_list_X_array.append([X_cal(j) for j in edge_list_array[i]])
+
 print(edge_list_array)
+# print(edge_list_X_array)
 
-'''
-permutation(G.number_of_nodes())
-iterations = math.factorial(G.number_of_nodes())
+
+permutation(nodes)
+iterations = math.factorial(nodes)
 print("iterations: %d"%iterations)
+
 result = []
-result_z_w_i = []
+for now_G in range(len(edge_list_array)):
+    ######################################find all combination
+    for now_iteration in range(iterations):
+        new_edge_list = copy.deepcopy(edge_list_array[now_G])
+        for i in range(len(new_edge_list)):
+            new_edge_list[i][0]=n_array[now_iteration][new_edge_list[i][0]-1]+1
+            new_edge_list[i][1]=n_array[now_iteration][new_edge_list[i][1]-1]+1
+        # y=1
+        # w=1
+        # for i in range(len(new_edge_list)):
+        #     i_x_cal = X_cal(new_edge_list[i])
+        #     for j in range(i+1,len(new_edge_list)):
+        #         y *= (i_x_cal-X_cal(new_edge_list[j]))/(edge_list_X_array[now_G][i]-edge_list_X_array[now_G][j])
+        #     w *= i_x_cal/edge_list_X_array[now_G][i]
+        # result_z_w_i.append((y,(abs(y+1)+abs(w-1)),now_iteration))
+        result.append(sort(new_edge_list))
+    print("len result: %d"%(len(result)))
+##########################################filter
+    npresult = np.array(result)
+    npresult,result_n =np.unique(npresult,axis=0,return_index=True)
 
-######################################find all combination
-for now_iteration in range(iterations):
-    new_edge_list = copy.deepcopy(edge_list)
-    for i in range(len(new_edge_list)):
-        new_edge_list[i][0]=n_array[now_iteration][new_edge_list[i][0]-1]+1
-        new_edge_list[i][1]=n_array[now_iteration][new_edge_list[i][1]-1]+1
-    y=1
-    w=1
-    for i in range(len(new_edge_list)):
-        i_x_cal = X_cal(new_edge_list[i])
-        for j in range(i+1,len(new_edge_list)):
-
-            # y *= float(X_cal(new_edge_list[i])-X_cal(new_edge_list[j]))/(X_cal(edge_list[i])-X_cal(edge_list[j]))
-            y *= (i_x_cal-X_cal(new_edge_list[j]))/(edge_list_X[i]-edge_list_X[j])
-        w *= i_x_cal/edge_list_X[i]
-    # print (y,w,now_iteration)
-    result_z_w_i.append((y,(abs(y+1)+abs(w-1)),now_iteration))
-    result.append(sort(new_edge_list))
-
-# check_n = 30336
-# print result[check_n]
-# print result_z_w_i[check_n]
-print("len result,result_z_w_i: %d %d"%(len(result),len(result_z_w_i)))
-
-result = np.array(result)
-result_z_w_i = np.array(result_z_w_i)
-for i in range(len(result_z_w_i)):
-    if i ==  len(result_z_w_i):
-        break
-    same_index = np.where(np.all(result == result[i], axis=(1,2)))[0]
-    # print same_index
-    result_z_w_i = np.delete(result_z_w_i,same_index[1:],0)
-    result = np.delete(result,same_index[1:],0)
-
-print("filter len result,result_z_w_i: %d %d"%(len(result),len(result_z_w_i)))
-print np.where(result_z_w_i[:,1]<0.0001)[0]
+    print("filter len result: %d"%(len(npresult)))
 
 
 ##########################################save file
-path = 'output.txt'
-record_file = open(path, 'w')
-write_string="A1: "
-for i in edge_list:
-     write_string += str(i)+", "
-record_file.write(write_string[:-2])
+    # path = 'output2.txt'
+    # record_file = open(path, 'w')
+    # write_string="A1: "
+    # for i in edge_list_array[now_G]:
+    #      write_string += str(i)+", "
+    # record_file.write(write_string[:-2])
+    #
+    # for i in range(len(result)):
+    #     write_string="\n{}, \tf=".format(i)
+    #     for k in range(len(n_array[0])):
+    #         write_string+=str(k+1)+":"+str(n_array[result_n[i]][k]+1)+", "
+    #     write_string+="Z=?,\n"
+    #     for j in list(result[i]):
+    #         write_string += str(j)+", "
+    #     record_file.write(write_string[:-2])
+    # record_file.write("\n\n")
+    # record_file.close()
 
-for i in range(len(result_z_w_i)):
-    write_string="\n{}, \tf=".format(i)
-    for k in range(len(n_array[0])):
-        write_string+=str(k+1)+":"+str(n_array[int(result_z_w_i[i,2])][k]+1)+", "
-    write_string+="Z={:+.20f},\n".format(result_z_w_i[i,0])
-    for j in list(result[i]):
-        write_string += str(j)+", "
-    record_file.write(write_string[:-2])
-record_file.write("\n\n")
-record_file.close()
-'''
 #########################################show graph
 # print("node",G.number_of_nodes())
 # print("edges",G.number_of_edges())
