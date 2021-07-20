@@ -134,15 +134,15 @@ for i in range(len(result)):
 print("filter result: %d"%len(result))
 # print("filter result: %d"%len(result_z))
 ##########################################print result
-# for i in range(len(result)):
-#     print "%d:"%(i+1),
-#     # for j in  range(len(n_array[i])):
-#         # print "f(%d)=%d"%(j+1,n_array[i][j]+1),
-#     # print ""
-#     for j in  result[i]:
-#         print "[%d, %d]"%(j[0],j[1]),
-#     print result_z[i],
-#     print "\n"
+for i in range(len(result)):
+    print "%d:"%(i+1),
+    # for j in  range(len(n_array[i])):
+        # print "f(%d)=%d"%(j+1,n_array[i][j]+1),
+    # print ""
+    for j in  result[i]:
+        print "[%d, %d]"%(j[0],j[1]),
+    print result_z[i],
+    print "\n"
 
 #######################################edge switching
 # all_new_g =[]
