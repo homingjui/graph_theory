@@ -104,6 +104,10 @@ for now_iteration in range(iterations):
             # y *= float(X_cal(new_edge_list[i])-X_cal(new_edge_list[j]))/(X_cal(edge_list[i])-X_cal(edge_list[j]))
             y *= float(X_cal(new_edge_list[i])-X_cal(new_edge_list[j]))/(edge_list_X[i]-edge_list_X[j])
     result_z.append(y)
+
+
+
+
     result.append(sort(new_edge_list))
 
 
@@ -145,91 +149,91 @@ for i in range(len(result)):
     print "\n"
 
 #######################################edge switching
-# all_new_g =[]
-# check_g = 0
-# print "for this graph",result[check_g].tolist()
-# # print result[check_g].tolist()
-# for i in range(len(result[check_g])):
-#     edges_on_node =  np.unique(result[check_g,np.where((result[check_g]==result[check_g,i,0])  | (result[check_g]==result[check_g,i,1]))[0]],axis=0)
-#     if len(np.unique(edges_on_node))!=6:
-#         # print "[%d %d] 5 point edge"%(result[check_g,i,0],result[check_g,i,1])
-#         continue
-#     del_n = np.where((edges_on_node==result[check_g,i]).all(axis=1))[0]
-#     edges_on_node = np.delete(edges_on_node, del_n,axis=0)
-#     edges_on_node_a = edges_on_node[np.where(edges_on_node==result[check_g,i,0])[0]]
-#     edges_on_node_b = edges_on_node[np.where(edges_on_node==result[check_g,i,1])[0]]
-#
-#     print "(u, v) ",
-#     print result[check_g,i]
-#     for j in range(len(edges_on_node_b)):
-#         # print result[check_g,i]
-#         # print edges_on_node_a[0],
-#         # print edges_on_node_b[j]
-#         new_g = np.array(result[check_g])
-#
-#         change_index = np.where((new_g[:,0] == edges_on_node_a[0,0]) & (new_g[:,1]==edges_on_node_a[0,1]))[0][0]
-#         new_g[change_index][new_g[change_index]==result[check_g,i,0]] = result[check_g,i,1]
-#
-#         change_index = np.where((new_g[:,0] == edges_on_node_b[j,0]) & (new_g[:,1]==edges_on_node_b[j,1]))[0][0]
-#         new_g[change_index][new_g[change_index]==result[check_g,i,1]] = result[check_g,i,0]
-#         # new_g = sort(new_g)
-#
-#         print "switch edges:",
-#         print edges_on_node_a[0],
-#         print edges_on_node_b[j],
-#         if len(np.where(np.all(result == sort(new_g), axis=(1,2)))[0]) == 0:
-#             print "-> new graph!"
-#             print sort(new_g)
-#             all_new_g.append(sort(new_g))
-#         else:
-#             print "-> already exists"
-#             print sort(new_g)
-#     print ""
-#
-# all_new_g = np.array(all_new_g)
-# for i in range(len(all_new_g)):
-#     if i ==  len(all_new_g):
-#         break
-#     same_index = np.where(np.all(all_new_g == all_new_g[i], axis=(1,2)))[0]
-#     all_new_g = np.delete(all_new_g,same_index[1:],0)
-#
-# #######################################print new edges
-# for i in range(len(all_new_g)):
-#     print "%d:"%(i+1),
-#     # for j in  range(len(n_array[i])):
-#         # print "f(%d)=%d"%(j+1,n_array[i][j]+1),
-#     # print ""
-#     for j in  all_new_g[i]:
-#         print "[%d, %d]"%(j[0],j[1]),
-#     print "\n"
-
-
-##########################################remove ege
-remove_g_all =[]
-remove_g_n = 0
-
-# print "for this graph",result[remove_g_n].tolist()
-print result[remove_g_n].tolist()
-for i in range(len(result[remove_g_n])):
-    edges_on_node =  np.unique(result[remove_g_n,np.where((result[remove_g_n]==result[remove_g_n,i,0])  | (result[remove_g_n]==result[remove_g_n,i,1]))[0]],axis=0)
+all_new_g =[]
+check_g = 0
+print "for this graph",result[check_g].tolist()
+# print result[check_g].tolist()
+for i in range(len(result[check_g])):
+    edges_on_node =  np.unique(result[check_g,np.where((result[check_g]==result[check_g,i,0])  | (result[check_g]==result[check_g,i,1]))[0]],axis=0)
     if len(np.unique(edges_on_node))!=6:
-        # print "[%d %d] 5 point edge"%(result[remove_g_n,i,0],result[remove_g_n,i,1])
+        # print "[%d %d] 5 point edge"%(result[check_g,i,0],result[check_g,i,1])
         continue
-    # print result[remove_g_n,i]
-    remove_g =np.array(result[remove_g_n])
-    remove_g = np.delete(remove_g,np.where(np.all(remove_g==result[remove_g_n,i],axis=1))[0],axis=0)
-    remove_g[remove_g==result[remove_g_n,i,1]] = result[remove_g_n,i,0]
-    remove_g[remove_g>result[remove_g_n,i,1]] -= 1
-    remove_g_all.append(sort(remove_g))
+    del_n = np.where((edges_on_node==result[check_g,i]).all(axis=1))[0]
+    edges_on_node = np.delete(edges_on_node, del_n,axis=0)
+    edges_on_node_a = edges_on_node[np.where(edges_on_node==result[check_g,i,0])[0]]
+    edges_on_node_b = edges_on_node[np.where(edges_on_node==result[check_g,i,1])[0]]
 
-for i in range(len(remove_g_all)):
+    print "(u, v) ",
+    print result[check_g,i]
+    for j in range(len(edges_on_node_b)):
+        # print result[check_g,i]
+        # print edges_on_node_a[0],
+        # print edges_on_node_b[j]
+        new_g = np.array(result[check_g])
+
+        change_index = np.where((new_g[:,0] == edges_on_node_a[0,0]) & (new_g[:,1]==edges_on_node_a[0,1]))[0][0]
+        new_g[change_index][new_g[change_index]==result[check_g,i,0]] = result[check_g,i,1]
+
+        change_index = np.where((new_g[:,0] == edges_on_node_b[j,0]) & (new_g[:,1]==edges_on_node_b[j,1]))[0][0]
+        new_g[change_index][new_g[change_index]==result[check_g,i,1]] = result[check_g,i,0]
+        # new_g = sort(new_g)
+
+        print "switch edges:",
+        print edges_on_node_a[0],
+        print edges_on_node_b[j],
+        if len(np.where(np.all(result == sort(new_g), axis=(1,2)))[0]) == 0:
+            print "-> new graph!"
+            print sort(new_g)
+            all_new_g.append(sort(new_g))
+        else:
+            print "-> already exists"
+            print sort(new_g)
+    print ""
+
+all_new_g = np.array(all_new_g)
+for i in range(len(all_new_g)):
+    if i ==  len(all_new_g):
+        break
+    same_index = np.where(np.all(all_new_g == all_new_g[i], axis=(1,2)))[0]
+    all_new_g = np.delete(all_new_g,same_index[1:],0)
+
+#######################################print new edges
+for i in range(len(all_new_g)):
     print "%d:"%(i+1),
     # for j in  range(len(n_array[i])):
         # print "f(%d)=%d"%(j+1,n_array[i][j]+1),
     # print ""
-    for j in  remove_g_all[i]:
+    for j in  all_new_g[i]:
         print "[%d, %d]"%(j[0],j[1]),
     print "\n"
+
+
+##########################################remove ege
+# remove_g_all =[]
+# remove_g_n = 0
+#
+# # print "for this graph",result[remove_g_n].tolist()
+# print result[remove_g_n].tolist()
+# for i in range(len(result[remove_g_n])):
+#     edges_on_node =  np.unique(result[remove_g_n,np.where((result[remove_g_n]==result[remove_g_n,i,0])  | (result[remove_g_n]==result[remove_g_n,i,1]))[0]],axis=0)
+#     if len(np.unique(edges_on_node))!=6:
+#         # print "[%d %d] 5 point edge"%(result[remove_g_n,i,0],result[remove_g_n,i,1])
+#         continue
+#     # print result[remove_g_n,i]
+#     remove_g =np.array(result[remove_g_n])
+#     remove_g = np.delete(remove_g,np.where(np.all(remove_g==result[remove_g_n,i],axis=1))[0],axis=0)
+#     remove_g[remove_g==result[remove_g_n,i,1]] = result[remove_g_n,i,0]
+#     remove_g[remove_g>result[remove_g_n,i,1]] -= 1
+#     remove_g_all.append(sort(remove_g))
+#
+# for i in range(len(remove_g_all)):
+#     print "%d:"%(i+1),
+#     # for j in  range(len(n_array[i])):
+#         # print "f(%d)=%d"%(j+1,n_array[i][j]+1),
+#     # print ""
+#     for j in  remove_g_all[i]:
+#         print "[%d, %d]"%(j[0],j[1]),
+#     print "\n"
 
 
 
@@ -243,16 +247,16 @@ for i in range(len(remove_g_all)):
 
 
 ##########################################show graph
-H = nx.Graph()
-for i in range(1,5):
-    H.add_node(i)
-H.add_edges_from(remove_g_all[0])
-nx.draw(H, with_labels=True, font_weight='bold')
-plt.show()
-print("node",H.number_of_nodes())
-print("edges",H.number_of_edges())
-print(H.nodes)
-print(H.edges)
+# H = nx.Graph()
+# for i in range(1,5):
+#     H.add_node(i)
+# H.add_edges_from(remove_g_all[0])
+# nx.draw(H, with_labels=True, font_weight='bold')
+# plt.show()
+# print("node",H.number_of_nodes())
+# print("edges",H.number_of_edges())
+# print(H.nodes)
+# print(H.edges)
 ####################################save file
 # with open("order4_new_graph_order4_new_graph_12.txt", "wb") as file:
 #      pickle.dump(all_new_g.tolist(), file)
