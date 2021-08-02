@@ -117,13 +117,13 @@ result_z = np.array(result_z)
 # result, indices = np.unique(result, axis=0, return_index=True)
 # result_z = result_z[indices]
 
-for i in range(len(result)):
-    if i ==  len(result_z):
-        break
-    same_index = np.where(np.all(result == result[i], axis=(1,2)))[0]
-    # print same_index
-    result_z = np.delete(result_z,same_index[1:])
-    result = np.delete(result,same_index[1:],0)
+# for i in range(len(result)):
+#     if i ==  len(result_z):
+#         break
+#     same_index = np.where(np.all(result == result[i], axis=(1,2)))[0]
+#     # print same_index
+#     result_z = np.delete(result_z,same_index[1:])
+#     result = np.delete(result,same_index[1:],0)
 ##############################  filter by Z
 # for i in range(len(result)):
 #     if i ==  len(result_z):
@@ -158,7 +158,7 @@ for i in range(len(result[check_g])):
     if len(np.unique(edges_on_node))!=6:
         # print "[%d %d] 5 point edge"%(result[check_g,i,0],result[check_g,i,1])
         continue
-    del_n = np.where((edges_on_node==result[check_g,i]).all(axis=1))[0]
+    del_n = np.where((edges_on_node==result[check_g,i]).all (axis=1))[0]
     edges_on_node = np.delete(edges_on_node, del_n,axis=0)
     edges_on_node_a = edges_on_node[np.where(edges_on_node==result[check_g,i,0])[0]]
     edges_on_node_b = edges_on_node[np.where(edges_on_node==result[check_g,i,1])[0]]
