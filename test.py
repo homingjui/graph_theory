@@ -32,11 +32,12 @@ for i in range(len(G_result[remove_g_n])):
         remove_g_or_x = np.array([X_cal(i) for i in remove_g_or])
         h=1
         for i in range(len(remove_g)):
-            for j in range(len(remove_g_x[i+1:])):
-                print (remove_g_x[i+1:]*(-1)+remove_g_x[i])[j],
-                print "/",
-                print (remove_g_or_x[i+1:]*(-1)+remove_g_or_x[i])[j]
+            # for j in range(len(remove_g_x[i+1:])):
+            #     print (remove_g_x[i+1:]*(-1)+remove_g_x[i])[j],
+            #     print "/",
+            #     print (remove_g_or_x[i+1:]*(-1)+remove_g_or_x[i])[j]
                 # print (remove_g_x[i+1:]*(-1))
             h*= np.prod(remove_g_x[i+1:]*(-1)+remove_g_x[i])/np.prod(remove_g_or_x[i+1:]*(-1)+remove_g_or_x[i])
+        print remove_g
         # h *=
         print h
