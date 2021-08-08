@@ -110,7 +110,7 @@ def do_all_G(edge_list_array,G_result,npresult,num_record):
             for i in range(edge_num):
                 z *= np.prod(new_edge_list_x[i+1:]*(-1)+new_edge_list_x[i])/np.prod(x_array[i+1:]*(-1)+x_array[i])
             w =np.prod(new_edge_list_x)/np.prod(x_array)
-            if abs(z+1)+abs(w-1)< 0.0001 :
+            if abs(z+1)+abs(w-1)< 0.0001  and sort(result[n_gaph])==sort(result[0]):
                 n_flag = True
             ###############################write record
             if savefile:
@@ -252,7 +252,7 @@ edge_list_array = np.hstack((circle,side_array))
 for i in range(len(edge_list_array)):
     edge_list_array[i]=sort(edge_list_array[i])
 
-edge_list_array=edge_list_array[:1]
+# edge_list_array=edge_list_array[:1]
 
 ###################################################do all G
 find_done = False
@@ -288,6 +288,7 @@ for n_order in range(1,nodes):
     G_name=chr(ord(G_name) + 1)
     print "\n\n***remove edge***"
     remove_g_all =[]
+    same_flag_n = 0
     for remove_g_n in range(len(G_result)):
         for remove_g_edge in range(len(G_result[remove_g_n])):
             remove_g =np.array(G_result[remove_g_n])
@@ -312,13 +313,17 @@ for n_order in range(1,nodes):
                             /np.prod(remove_g_or_x[remove_g_edge+1:]*(-1)+remove_g_or_x[remove_g_edge]))
                 # print h
                 remove_g = np.delete(remove_g,remove_g_edge,axis=0)
-                remove_g_all.append(sort(remove_g))
+                remove_g_all.append([G_name+str(remove_g_n)+","+str(remove_g_edge),sort(remove_g)])
+            else :
+                same_flag_n+=1
     if len(remove_g_all)==0:
         print "find "+str(len(remove_g_all))+" 2n-"+str(n_order)+" G \nall done!"
         break
-    edge_list_array=np.unique(remove_g_all,axis=0)
+    print remove_g_all
+    print len(remove_g_all),
+    print same_flag_n
+    # edge_list_array=np.unique(remove_g_all,axis=0)
     print "find "+str(len(edge_list_array))+" 2n-"+str(n_order)+" G"
-
     ###################################################do all G
     find_done = False
     print "%d nodes "%(nodes-n_order),
@@ -329,7 +334,7 @@ for n_order in range(1,nodes):
     npresult = []   ###########for all result filter
     num_record = [0]
     ########################################permutation
-    G_result,npresult,num_record=do_all_G(edge_list_array,G_result,npresult,num_record)
+    G_result,npresult,num_record=do_all_G(np.array([i[1] for i in remove_g_all]),G_result,npresult,num_record)
     print "### "+str(len(G_result))+" 2n-"+str(n_order)+" G,",
     all_npresult.append(npresult)
     all_G_result.append(G_result)
