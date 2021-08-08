@@ -5,8 +5,15 @@ import pickle
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-np.set_printoptions(threshold=np.inf)
 import time
+import pandas as pd
+from IPython.display import display
+
+np.set_printoptions(threshold=np.inf)
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', None)
+
 
 def perm(n,begin,end):
     global n_array,side_array
@@ -259,6 +266,7 @@ find_done = False
 all_npresult = []   ###########for all order result
 all_G_result = []  ###########for all order G result
 all_num_record = []  ########for all order N
+all_remove_g = []
 print(np.shape(edge_list_array))
 G_result = np.array([])   ###########for all G
 npresult = []   ###########for all result filter
@@ -285,10 +293,8 @@ all_G_result.append(G_result)
 all_num_record.append(num_record)
 ##########################################remove edge
 for n_order in range(1,nodes):
-    G_name=chr(ord(G_name) + 1)
     print "\n\n***remove edge***"
     remove_g_all =[]
-    same_flag_n = 0
     for remove_g_n in range(len(G_result)):
         for remove_g_edge in range(len(G_result[remove_g_n])):
             remove_g =np.array(G_result[remove_g_n])
@@ -313,43 +319,75 @@ for n_order in range(1,nodes):
                             /np.prod(remove_g_or_x[remove_g_edge+1:]*(-1)+remove_g_or_x[remove_g_edge]))
                 # print h
                 remove_g = np.delete(remove_g,remove_g_edge,axis=0)
-                remove_g_all.append([G_name+str(remove_g_n)+","+str(remove_g_edge),sort(remove_g)])
+                remove_g_all.append([remove_g_n,remove_g_edge,sort(remove_g),None])
             else :
-                same_flag_n+=1
-    if len(remove_g_all)==0:
+                remove_g_all.append([remove_g_n,remove_g_edge,None,remove_g.tolist()])
+    if len([i[2] for i in remove_g_all if i[2]])==0:
         print "find "+str(len(remove_g_all))+" 2n-"+str(n_order)+" G \nall done!"
         break
-    print remove_g_all
-    print len(remove_g_all),
-    print same_flag_n
+    print len(remove_g_all)
+    all_remove_g.append(remove_g_all)
     # edge_list_array=np.unique(remove_g_all,axis=0)
     print "find "+str(len(edge_list_array))+" 2n-"+str(n_order)+" G"
     ###################################################do all G
     find_done = False
     print "%d nodes "%(nodes-n_order),
     print("iterations: %d"%math.factorial(nodes-n_order))
+    G_name=chr(ord(G_name) + 1)
     permutation(nodes-n_order)
     n_array = np.array(n_array)
     G_result = np.array([])   ###########for all G
     npresult = []   ###########for all result filter
     num_record = [0]
     ########################################permutation
-    G_result,npresult,num_record=do_all_G(np.array([i[1] for i in remove_g_all]),G_result,npresult,num_record)
+    G_result,npresult,num_record=do_all_G(np.array([i[2] for i in remove_g_all if i[2]]),G_result,npresult,num_record)
     print "### "+str(len(G_result))+" 2n-"+str(n_order)+" G,",
     all_npresult.append(npresult)
     all_G_result.append(G_result)
     all_num_record.append(num_record)
 
-print all_G_result
+print ""
 print all_num_record
 for i in all_npresult:
-    print len(i)
-    for j in i:
-        print len(j)
+    print len(i),
+    print [len(j) for j in i]
 
 
+table =  [[[] for i in range(len(all_num_record[0])-1)] for i in range(len(all_npresult[1])+1)]
+for removed_g in all_remove_g[0]:
+    # print removed_g
+    if removed_g[2] != None:
+        for f_g in range(len(all_npresult[1])):
+            # print np.where(np.all(all_npresult[1][f_g] == removed_g[2], axis=(1,2)))[0]
+            if len(np.where(np.all(all_npresult[1][f_g] == removed_g[2], axis=(1,2)))[0])>0:
+                table[f_g][removed_g[0]].append(removed_g[1])
+    else :
+        table[len(all_npresult[1])][removed_g[0]].append(removed_g[1])
+        # print "n"
 
 
+columns=[]
+N = 0
+for i in range(1,len(all_num_record[0])):
+    if all_num_record[0][i] == 1:
+        columns.append("A"+str(i-N))
+    else:
+        N +=1
+        columns.append("AN"+str(N))
+
+index=[]
+N = 0
+for i in range(1,len(all_num_record[1])):
+    if all_num_record[1][i] == 1:
+        index.append("B"+str(i-N))
+    else:
+        N +=1
+        index.append("BN"+str(N))
+index.append("0")
+
+df =pd.DataFrame(table,index=index,columns=columns)
+
+print df
 
 
 
