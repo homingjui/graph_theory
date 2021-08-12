@@ -67,10 +67,13 @@ def sort(n):
                 flag = True
     return x
 #end def#####################################
-def do_all_G(edge_list_array,G_result,npresult,num_record):
+def do_all_G(edge_list_array,G_result,num_record):
     print "***do permutation!***"
     iterations = len(n_array)
     edge_num = len(edge_list_array[0])
+    npresult = []   ###########for all result filter
+    npresult_z = []   ###########esult z
+    npresult_n = []   ###########f result filter pos
     ############################################### do all G
     for now_G in range(len(edge_list_array)):
         result = []
@@ -83,11 +86,8 @@ def do_all_G(edge_list_array,G_result,npresult,num_record):
                     break
             if same_flag:
                 continue
-            # if len(np.where(np.all(npresult == edge_list_array[now_G], axis=(1,2)))[0])>0:
-            #     continue
         ######################################find all combination
         x_array = np.array([X_cal(i) for i in edge_list_array[now_G]])
-        # start = time.time()
         for now_iteration in range(iterations):
             new_edge_list = copy.deepcopy(edge_list_array[now_G])
             for i in range(edge_num):
@@ -95,28 +95,18 @@ def do_all_G(edge_list_array,G_result,npresult,num_record):
                 new_edge_list[i][1]=n_array[now_iteration][new_edge_list[i][1]-1]+1
             result_uni.append(sort(new_edge_list))
             result.append(new_edge_list)
-        # print time.time()-start
-        # start = time.time()
-        # result = np.array(result)
-        # print np.where(np.all(result == result[0], axis=(1,2)))
-    ##########################################filter
-        for i in range(len(result_uni)):
-            result_uni[i]=sort(result_uni[i])
-        result_uni=np.array(result_uni)
-        # result_uni,result_n =np.unique(result_uni,axis=0,return_index=True)
     ##########################################save file
         write_string=""
-        #######################################################################not filted
         n_flag = False
+        z_result_uni = []
         for n_gaph in range(len(result_uni)):
-            if n_flag and not savefile:
-                break
             ###############################get z,w
             new_edge_list_x = np.array([X_cal(j) for j in result[n_gaph]])
             z=1
             for i in range(edge_num):
                 z *= np.prod(new_edge_list_x[i+1:]*(-1)+new_edge_list_x[i])/np.prod(x_array[i+1:]*(-1)+x_array[i])
             w =np.prod(new_edge_list_x)/np.prod(x_array)
+            z_result_uni.append(int(z/abs(z)))
             if abs(z+1)+abs(w-1)< 0.0001  and sort(result[n_gaph])==sort(result[0]):
                 n_flag = True
             ###############################write record
@@ -139,12 +129,10 @@ def do_all_G(edge_list_array,G_result,npresult,num_record):
         write_head=G_name
         if n_flag:
             write_head+="N"
-            write_head+="("+str(num_record.count(-1))+"):"
+            write_head+="("+str(num_record.count(-1)+1)+"):"
         else:
-            write_head+="("+str(num_record.count(1))+"):"
+            write_head+="("+str(num_record.count(1)+1)+"):"
         write_head += str(edge_list_array[now_G].tolist())
-        # for i in edge_list_array[now_G]:
-        #      write_head += str(i)+", "
         record_file.write(write_head)
         record_file.write("\n")
         record_file.close()
@@ -159,7 +147,9 @@ def do_all_G(edge_list_array,G_result,npresult,num_record):
         else:
             num_record.append(1)
         ###########################################result
-        result_uni = np.unique(result_uni,axis=0)
+        # start = time.time()
+        result_uni,result_n =np.unique(result_uni,axis=0,return_index=True)####################################filter!!
+        # print time.time()-start
         if n_flag:
             print ""+G_name+"N"+"("+str(num_record.count(-1))+")  ",
         else:
@@ -167,16 +157,12 @@ def do_all_G(edge_list_array,G_result,npresult,num_record):
         print("num f(G) %d"%(len(result_uni)))
         if len(G_result)==0:
             G_result= np.array([edge_list_array[now_G]])
-            # npresult = np.array(result_uni)
-            npresult.append(result_uni)
         else:
-            # npresult= np.vstack((npresult,result_uni))
-            npresult.append(result_uni)
             G_result= np.vstack((G_result,[edge_list_array[now_G]]))
-        # print "all f(G) num: %d"%np.shape(npresult)[0],
-        # print (", different f(G) ->%d"%np.shape(np.unique(npresult,axis=0))[0])
-        # print time.time()-start
-    return G_result,npresult,num_record
+        npresult_z.append(z_result_uni)
+        npresult_n.append(result_n)
+        npresult.append(result_uni)
+    return G_result,npresult,num_record,npresult_z,npresult_n
 #end def#####################################
 def edge_switch():
     all_new_g = []
@@ -264,17 +250,18 @@ for i in range(len(edge_list_array)):
 ###################################################do all G
 find_done = False
 all_npresult = []   ###########for all order result
+all_npresult_z = []   ###########order result z
+all_npresult_n = []   ###########order result pos
 all_G_result = []  ###########for all order G result
 all_num_record = []  ########for all order N
 all_remove_g = []
 print(np.shape(edge_list_array))
 G_result = np.array([])   ###########for all G
-npresult = []   ###########for all result filter
 num_record = [0]
 G_name="A"
 while not find_done:
     ########################################permutation
-    G_result,npresult,num_record=do_all_G(edge_list_array,G_result,npresult,num_record)
+    G_result,npresult,num_record,npresult_z,npresult_n=do_all_G(edge_list_array,G_result,num_record)
     print str(np.shape(G_result)[0]-num_record[0])+" new G"
     # #######################################edge switching
     print "\n***do edge switch***"
@@ -291,6 +278,8 @@ print "### "+str(len(G_result))+" G ###"
 all_npresult.append(npresult)
 all_G_result.append(G_result)
 all_num_record.append(num_record)
+all_npresult_z.append(npresult_z)
+all_npresult_n.append(npresult_n)
 ##########################################remove edge
 for n_order in range(1,nodes):
     print "\n\n***remove edge***"
@@ -315,11 +304,9 @@ for n_order in range(1,nodes):
                 remove_g_or_x = np.array([X_cal(i) for i in remove_g_or])
                 h=1
                 for i in range(len(remove_g)):
-                    h*= (np.prod(remove_g_x[remove_g_edge+1:]*(-1)+remove_g_x[remove_g_edge])
-                            /np.prod(remove_g_or_x[remove_g_edge+1:]*(-1)+remove_g_or_x[remove_g_edge]))
-                # print h
+                    h*= np.prod(remove_g_x[i+1:]*(-1)+remove_g_x[i])/np.prod(remove_g_or_x[i+1:]*(-1)+remove_g_or_x[i])
                 remove_g = np.delete(remove_g,remove_g_edge,axis=0)
-                remove_g_all.append([remove_g_n,remove_g_edge,sort(remove_g),None])
+                remove_g_all.append([remove_g_n,remove_g_edge,sort(remove_g),int(h/abs(h))])
             else :
                 remove_g_all.append([remove_g_n,remove_g_edge,None,remove_g.tolist()])
     if len([i[2] for i in remove_g_all if i[2]])==0:
@@ -327,67 +314,116 @@ for n_order in range(1,nodes):
         break
     print len(remove_g_all)
     all_remove_g.append(remove_g_all)
-    # edge_list_array=np.unique(remove_g_all,axis=0)
-    print "find "+str(len(edge_list_array))+" 2n-"+str(n_order)+" G"
+    print "find "+str(len(remove_g_all))+" 2n-"+str(n_order)+" G"
     ###################################################do all G
     find_done = False
     print "%d nodes "%(nodes-n_order),
     print("iterations: %d"%math.factorial(nodes-n_order))
-    G_name=chr(ord(G_name) + 1)
+    G_name=chr(ord(G_name)+1)
     permutation(nodes-n_order)
     n_array = np.array(n_array)
     G_result = np.array([])   ###########for all G
-    npresult = []   ###########for all result filter
     num_record = [0]
     ########################################permutation
-    G_result,npresult,num_record=do_all_G(np.array([i[2] for i in remove_g_all if i[2]]),G_result,npresult,num_record)
+    G_result,npresult,num_record,npresult_z,npresult_n=do_all_G(np.array([i[2] for i in remove_g_all if i[2]]),
+                                                                                                                                                    G_result,num_record)
     print "### "+str(len(G_result))+" 2n-"+str(n_order)+" G,",
     all_npresult.append(npresult)
     all_G_result.append(G_result)
     all_num_record.append(num_record)
+    all_npresult_z.append(npresult_z)
+    all_npresult_n.append(npresult_n)
 
 print ""
 print all_num_record
-for i in all_npresult:
+for i in range(len(all_npresult)):
+    print (len(all_G_result[i]),len(all_npresult[i]),len(all_npresult_z[i]),len(all_npresult_n[i]))
+    print [len(j) for j in all_npresult[i]]
+    print [len(j) for j in all_npresult_n[i]]
+    print [len(j) for j in all_npresult_z[i]]
+
+
+
+for i in all_remove_g:
     print len(i),
-    print [len(j) for j in i]
+    print " ",
+print ""
+
+G_name="A"
+for order in range(len(all_num_record)-1):
+    table =  [[[] for i in range(len(all_num_record[order])-1)] for i in range(len(all_npresult[order+1])+1)]
+    for removed_g in all_remove_g[order]:
+        # print removed_g
+        if removed_g[2] != None:
+            for f_g in range(len(all_npresult[order+1])):
+                finded =  np.where(np.all(all_npresult[order+1][f_g] == removed_g[2], axis=(1,2)))[0]
+                if len(finded)>0:
+                    pos= all_npresult_n[order+1][f_g][finded[0]]
+                    # table[f_g][removed_g[0]].append([removed_g[1],removed_g[3],all_npresult_z[order+1][f_g][pos]])
+                    table[f_g][removed_g[0]].append(removed_g[1])
+        else :
+            table[len(all_npresult[order+1])][removed_g[0]].append(removed_g[1])
+            # print "n"
+
+    columns=[]
+    N = 0
+    for i in range(1,len(all_num_record[order])):
+        if all_num_record[order][i] == 1:
+            columns.append(chr(ord(G_name)+order)+str(i-N))
+        else:
+            N +=1
+            columns.append(chr(ord(G_name)+order)+"N"+str(N))
+    index=[]
+    N = 0
+    for i in range(1,len(all_num_record[order+1])):
+        if all_num_record[order+1][i] == 1:
+            index.append(chr(ord(G_name)+order+1)+str(i-N))
+        else:
+            N +=1
+            index.append(chr(ord(G_name)+order+1)+"N"+str(N))
+    index.append("0")
+    # df =pd.DataFrame(table,index=index,columns=columns)
+    # print df
+    sort_indx = []
+    row_table = []
+    # for order in range(1,len(all_num_record)):
+    for g_num in range(len(all_num_record[order+1])-1):
+        if all_num_record[order+1][g_num+1] == 1:
+            sort_indx.append(index[g_num])
+            row_table.append(table[g_num])
+    for g_num in range(len(all_num_record[order+1])-1):
+        if all_num_record[order+1][g_num+1] == -1:
+            sort_indx.append(index[g_num])
+            row_table.append(table[g_num])
+    sort_indx.append(index[-1])
+    row_table.append(table[-1])
+    # df =pd.DataFrame(row_table,index=sort_indx,columns=columns)
+    # print df
+    N = 0
+    sort_columns = copy.deepcopy(columns)
+    sort_table =  [[[] for i in range(len(all_num_record[order])-1)] for i in range(len(all_npresult[order+1])+1)]
+    for g_num in range(len(all_num_record[order])-1):
+        if all_num_record[order][g_num+1] == 1:
+            for i in range(len(sort_table)):
+                sort_table[i][N]=row_table[i][g_num]
+            sort_columns[N]=columns[g_num]
+            N+=1
+    for g_num in range(len(all_num_record[order])-1):
+        if all_num_record[order][g_num+1] == -1:
+            for i in range(len(sort_table)):
+                sort_table[i][N]=row_table[i][g_num]
+            sort_columns[N]=columns[g_num]
+            N+=1
+    df =pd.DataFrame(sort_table,index=sort_indx,columns=sort_columns)
+    print df
 
 
-table =  [[[] for i in range(len(all_num_record[0])-1)] for i in range(len(all_npresult[1])+1)]
-for removed_g in all_remove_g[0]:
-    # print removed_g
-    if removed_g[2] != None:
-        for f_g in range(len(all_npresult[1])):
-            # print np.where(np.all(all_npresult[1][f_g] == removed_g[2], axis=(1,2)))[0]
-            if len(np.where(np.all(all_npresult[1][f_g] == removed_g[2], axis=(1,2)))[0])>0:
-                table[f_g][removed_g[0]].append(removed_g[1])
-    else :
-        table[len(all_npresult[1])][removed_g[0]].append(removed_g[1])
-        # print "n"
 
 
-columns=[]
-N = 0
-for i in range(1,len(all_num_record[0])):
-    if all_num_record[0][i] == 1:
-        columns.append("A"+str(i-N))
-    else:
-        N +=1
-        columns.append("AN"+str(N))
 
-index=[]
-N = 0
-for i in range(1,len(all_num_record[1])):
-    if all_num_record[1][i] == 1:
-        index.append("B"+str(i-N))
-    else:
-        N +=1
-        index.append("BN"+str(N))
-index.append("0")
 
-df =pd.DataFrame(table,index=index,columns=columns)
 
-print df
+# df.to_csv('table.csv')
 
 
 

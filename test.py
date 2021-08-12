@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import copy
 
 def X_cal(n):
     if n[0]==n[1]:
@@ -7,11 +8,15 @@ def X_cal(n):
     return float(100*min(n)+max(n))
 
 
-a = [[[] for i in range(3)] for i in range(3)]
+a=[[[1,2,3],[4,5,6]],[[7,8,9],[0,1,2]]]
+b=copy.deepcopy(a)
 print a
-a[0][0].append("1")
-a[0][0].append("2")
+for i in a:
+    for j in i:
+        j[0]=87
 print a
+print b
+
 
 # remove_g_n = 0
 # G_result=np.array([[[1,2],[1,3],[1,5],[2,3],[2,4],[3,6],[4,5],[4,6],[5,6]]])
