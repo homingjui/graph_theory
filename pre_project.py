@@ -76,6 +76,7 @@ def do_all_G(edge_list_array,G_result,num_record):
     npresult_n = []   ###########f result filter pos
     ############################################### do all G
     for now_G in range(len(edge_list_array)):
+        start = time.time()
         result = []
         result_uni = []
         if len(G_result)>0:
@@ -88,6 +89,8 @@ def do_all_G(edge_list_array,G_result,num_record):
                 continue
         ######################################find all combination
         x_array = np.array([X_cal(i) for i in edge_list_array[now_G]])
+        x_prod = [np.prod(x_array[i+1:]*(-1)+x_array[i]) for i in range(edge_num)]
+        print time.time()-start
         for now_iteration in range(iterations):
             new_edge_list = copy.deepcopy(edge_list_array[now_G])
             for i in range(edge_num):
@@ -96,6 +99,7 @@ def do_all_G(edge_list_array,G_result,num_record):
             result_uni.append(sort(new_edge_list))
             result.append(new_edge_list)
     ##########################################save file
+        print time.time()-start
         write_string=""
         n_flag = False
         z_result_uni = []
@@ -104,7 +108,7 @@ def do_all_G(edge_list_array,G_result,num_record):
             new_edge_list_x = np.array([X_cal(j) for j in result[n_gaph]])
             z=1
             for i in range(edge_num):
-                z *= np.prod(new_edge_list_x[i+1:]*(-1)+new_edge_list_x[i])/np.prod(x_array[i+1:]*(-1)+x_array[i])
+                z *= np.prod(new_edge_list_x[i]-new_edge_list_x[i+1:])/x_prod[i]
             w =np.prod(new_edge_list_x)/np.prod(x_array)
             z_result_uni.append(int(z/abs(z)))
             if abs(z+1)+abs(w-1)< 0.0001  and sort(result[n_gaph])==sort(result[0]):
@@ -115,16 +119,18 @@ def do_all_G(edge_list_array,G_result,num_record):
                 for i in range(len(n_array[0])):
                     write_string+=str(i+1)+":"+str(n_array[n_gaph][i]+1)+",  "
                 write_string += "\n"
-                write_string += str(result_uni[n_gaph].tolist())
+                write_string += str(result_uni[n_gaph])
                     # print n_gaph
                 write_string += "\tZ="+str(z)+", W="+str((abs(z+1)+abs(w-1)))
+
+        print time.time()-start
         record_file = open(path, 'a')
         path_arr = 'output/'+G_name
         if n_flag:
             path_arr+="N"
-            path_arr+=str(num_record.count(-1))
+            path_arr+=str(num_record.count(-1)+1)
         else:
-            path_arr+=str(num_record.count(1))
+            path_arr+=str(num_record.count(1)+1)
         path_arr+='.txt'
         write_head=G_name
         if n_flag:
@@ -217,7 +223,7 @@ nodes = 8
 path = 'output.txt'
 record_file = open(path, 'w')
 record_file.close()
-savefile = False
+savefile = True
 ##############################################parm-end
 print "%d nodes, "%nodes,
 print("iterations: %d"%math.factorial(nodes))
@@ -359,10 +365,11 @@ for order in range(len(all_num_record)-1):
                 finded =  np.where(np.all(all_npresult[order+1][f_g] == removed_g[2], axis=(1,2)))[0]
                 if len(finded)>0:
                     pos= all_npresult_n[order+1][f_g][finded[0]]
+                    table[f_g][removed_g[0]].append(removed_g[3]*all_npresult_z[order+1][f_g][pos])
                     # table[f_g][removed_g[0]].append([removed_g[1],removed_g[3],all_npresult_z[order+1][f_g][pos]])
-                    table[f_g][removed_g[0]].append(removed_g[1])
+                    # table[f_g][removed_g[0]].append(removed_g[1])
         else :
-            table[len(all_npresult[order+1])][removed_g[0]].append(removed_g[1])
+            table[len(all_npresult[order+1])][removed_g[0]].append(removed_g[1]+1)
             # print "n"
 
     columns=[]
@@ -417,10 +424,41 @@ for order in range(len(all_num_record)-1):
     df =pd.DataFrame(sort_table,index=sort_indx,columns=sort_columns)
     print df
 
+    for row in sort_table[:-1]:
+        for i in range(len(row)):
+            if len(row[i])==0:
+                row[i]=0
+            else:
+                row[i]=sum(row[i])
 
+    print "\nM("+sort_columns[0][0]+", "+sort_indx[0][0]+")"
+    matrix = []
+    m_columns=[i for i in sort_indx[:-1] if i[1]!="N"]
+    m_index=[]
+    for col in range(len(sort_columns)):
+        if sort_columns[col][1]=="N":
+            break
+        matrix.append([i[col] for i in sort_table[:len(m_columns)]])
+        m_index.append( sort_columns[col])
+    if len(matrix)>0 and len(m_columns)>0 :
+        df =pd.DataFrame(matrix,index=m_index,columns=m_columns)
+        print df
+    else:
+        print "none"
 
-
-
+    print "\nM("+sort_columns[0][0]+"N, "+sort_indx[0][0]+")"
+    matrix = []
+    m_columns=[i for i in sort_indx[:-1] if i[1]!="N"]
+    m_index=[]
+    for col in range(len(sort_columns)):
+        if sort_columns[col][1]=="N":
+            matrix.append([i[col] for i in sort_table[:len(m_columns)]])
+            m_index.append( sort_columns[col])
+    if len(matrix)>0 and len(m_columns)>0 :
+        df =pd.DataFrame(matrix,index=m_index,columns=m_columns)
+        print df
+    else:
+        print "none"
 
 
 # df.to_csv('table.csv')
