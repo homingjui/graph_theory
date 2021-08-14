@@ -90,7 +90,6 @@ def do_all_G(edge_list_array,G_result,num_record):
         ######################################find all combination
         x_array = np.array([X_cal(i) for i in edge_list_array[now_G]])
         x_prod = [np.prod(x_array[i+1:]*(-1)+x_array[i]) for i in range(edge_num)]
-        print time.time()-start
         for now_iteration in range(iterations):
             new_edge_list = copy.deepcopy(edge_list_array[now_G])
             for i in range(edge_num):
@@ -100,26 +99,32 @@ def do_all_G(edge_list_array,G_result,num_record):
             result.append(new_edge_list)
     ##########################################save file
         print time.time()-start
+        result_uni,result_n =np.unique(result_uni,axis=0,return_index=True)####################################filter!!
         write_string=""
         n_flag = False
         z_result_uni = []
-        for n_gaph in range(len(result_uni)):
+        for n_gaph in range(len(result)):
             ###############################get z,w
-            new_edge_list_x = np.array([X_cal(j) for j in result[n_gaph]])
             z=1
-            for i in range(edge_num):
-                z *= np.prod(new_edge_list_x[i]-new_edge_list_x[i+1:])/x_prod[i]
-            w =np.prod(new_edge_list_x)/np.prod(x_array)
-            z_result_uni.append(int(z/abs(z)))
-            if abs(z+1)+abs(w-1)< 0.0001  and sort(result[n_gaph])==sort(result[0]):
-                n_flag = True
+            w=0
+            if (n_gaph not in result_n)and n_flag == True:
+                z=0
+                z_result_uni.append(0)
+            else:
+                new_edge_list_x = np.array([X_cal(j) for j in result[n_gaph]])
+                for i in range(edge_num):
+                    z *= np.prod(new_edge_list_x[i]-new_edge_list_x[i+1:])/x_prod[i]
+                w =np.prod(new_edge_list_x)/np.prod(x_array)
+                z_result_uni.append(int(z/abs(z)))
+                if abs(z+1)+abs(w-1)< 0.0001  and sort(result[n_gaph])==sort(result[0]):
+                    n_flag = True
             ###############################write record
             if savefile:
                 write_string+="\n\n"+str(n_gaph)+", f="
                 for i in range(len(n_array[0])):
                     write_string+=str(i+1)+":"+str(n_array[n_gaph][i]+1)+",  "
                 write_string += "\n"
-                write_string += str(result_uni[n_gaph])
+                write_string += str(result[n_gaph].tolist())
                     # print n_gaph
                 write_string += "\tZ="+str(z)+", W="+str((abs(z+1)+abs(w-1)))
 
@@ -154,7 +159,6 @@ def do_all_G(edge_list_array,G_result,num_record):
             num_record.append(1)
         ###########################################result
         # start = time.time()
-        result_uni,result_n =np.unique(result_uni,axis=0,return_index=True)####################################filter!!
         # print time.time()-start
         if n_flag:
             print ""+G_name+"N"+"("+str(num_record.count(-1))+")  ",
