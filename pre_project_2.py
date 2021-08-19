@@ -1,3 +1,4 @@
+####python3.7 -m pip install pympler
 import csv
 import math
 import copy
@@ -18,7 +19,7 @@ pd.set_option('display.width', None)
 
 
 def perm(n,begin,end):
-    global n_array,side_array
+    global n_array,side_array,now_permutation
     if begin>=end:
         side = False
         for i in range(0,len(n)-1,2):
@@ -29,22 +30,25 @@ def perm(n,begin,end):
                 side=True
                 break
         if not side:
-            side_array.append(n[:])
-        n_array.append(n[:])
-        # n_array[-1].append(0)
+            side_array[now_permutation]=n
+        else:
+            side_array[now_permutation]=0
+        n_array[now_permutation]=n
+        now_permutation+=1
     else:
-        i=begin
         for num in range(begin,end):
-          n[num],n[i]=n[i],n[num]
+          n[num],n[begin]=n[begin],n[num]
           perm(n,begin+1,end)
-          n[num],n[i]=n[i],n[num]
+          n[num],n[begin]=n[begin],n[num]
 #end def#####################################
-def permutation(n):
-    global n_array,side_array
-    n_array = []
-    side_array = []
-    n = [i for i in range(n)]
+def permutation(num):
+    global n_array,side_array,now_permutation
+    n = np.arange(num,dtype=np.uint8)
+    n_array = np.repeat([n],math.factorial(num),axis=0)
+    side_array = np.repeat([n],math.factorial(num),axis=0)
+    now_permutation=0
     perm(n,0,len(n))
+
 #end def#####################################
 def X_cal(n):
     if n[0]<n[1]:
@@ -55,10 +59,7 @@ def X_cal(n):
         return 0
 #end def#####################################
 def sort(n):
-    try:
-        x = n.tolist()
-    except:
-        x = copy.deepcopy(n)
+    x = n.tolist()
     flag = True
     for i in range(len(x)):
         if x[i][0]>x[i][1]:
@@ -224,7 +225,7 @@ def edge_switch():
 #end def#####################################
 
 ########################################################################parm
-nodes = 8
+nodes =8
 path = 'output.txt'
 record_file = open(path, 'w')
 record_file.close()
@@ -238,29 +239,33 @@ circle = []
 for i in range(1,nodes):
     circle.append([i,i+1])
 circle.append([1,nodes])
-circle = np.array([circle])
 permutation(nodes)
-n_array = np.array(n_array)
-print(asizeof(n_array))
+# print(asizeof(n_array))
+# 322696
+print(time.time()-total_time)
 
-# print len(n_array)
-# print side_array
+# 14.239812135696411
+# 25.85783863067627
 
-side_array = np.array(side_array)+1
-side_array = np.reshape(side_array,(np.shape(side_array)[0],-1,2))
+# 10.722990274429321
+# 22.64511013031006
+
+side_array=side_array[np.invert(np.all(side_array==0,axis=1))]+1
+side_array = np.reshape(side_array,(len(side_array),-1,2))
 for i in range(len(side_array)):
     side_array[i]=sort(side_array[i])
 side_array =np.unique(side_array,axis=0)
 # print np.shape(side_array)
 
-circle = np.repeat(circle,np.shape(side_array)[0],axis=0)
+print(time.time()-total_time)
+
+circle = np.repeat([circle],np.shape(side_array)[0],axis=0)
 edge_list_array = np.hstack((circle,side_array))
 # print edge_list_array
 for i in range(len(edge_list_array)):
     edge_list_array[i]=sort(edge_list_array[i])
 
 edge_list_array=edge_list_array[:1]
-
 ###################################################do all G
 find_done = False
 all_npresult = []   ###########for all order result
@@ -340,7 +345,6 @@ for n_order in range(1,nodes):
     print("iterations: %d"%math.factorial(nodes-n_order))
     G_name=chr(ord(G_name)+1)
     permutation(nodes-n_order)
-    n_array = np.array(n_array)
     G_result = np.array([])   ###########for all G
     num_record = [0]
     npresult = []   ###########for all result filter
@@ -350,7 +354,7 @@ for n_order in range(1,nodes):
     # G_result,npresult,num_record,npresult_z,npresult_n=do_all_G(edge_list_array,G_result,num_record,npresult,npresult_z,npresult_n)
     G_result,npresult,num_record,npresult_z,npresult_n=do_all_G(np.array([i[2] for i in remove_g_all if i[2]]),
                                                                 G_result,num_record,npresult,npresult_z,npresult_n)
-    print ("### "+str(len(G_result))+" 2n-"+str(n_order)+" G,",end="")
+    print ("### "+str(len(G_result))+" 2n-"+str(n_order)+" G###")
     all_npresult.append(npresult)
     all_G_result.append(G_result)
     all_num_record.append(num_record)
