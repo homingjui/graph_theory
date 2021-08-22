@@ -387,13 +387,9 @@ for order in range(len(all_num_record)-1):
                 finded =  np.where(np.all(all_npresult[order+1][f_g] == removed_g[2], axis=(1,2)))[0]
                 if len(finded)>0:
                     pos= all_npresult_n[order+1][f_g][finded[0]]
-                    table[f_g][removed_g[0]].append(removed_g[3]*all_npresult_z[order+1][f_g][pos])
-                    #table[f_g][removed_g[0]].append([removed_g[1],removed_g[3],all_npresult_z[order+1][f_g][pos]])
-                    #table[f_g][removed_g[0]].append([removed_g[1]+1,removed_g[3]])
-                    #table[f_g][removed_g[0]].append(removed_g[3])
+                    table[f_g][removed_g[0]].append([removed_g[1]+1,removed_g[3],all_npresult_z[order+1][f_g][pos]])
         else :
             table[len(all_npresult[order+1])][removed_g[0]].append(removed_g[1]+1)
-            # print "n"
 
     columns=[]
     N = 0
@@ -412,11 +408,8 @@ for order in range(len(all_num_record)-1):
             N +=1
             index.append(chr(ord(G_name)+order+1)+"N"+str(N))
     index.append("0")
-    # df =pd.DataFrame(table,index=index,columns=columns)
-    # print df
     sort_indx = []
     row_table = []
-    # for order in range(1,len(all_num_record)):
     for g_num in range(len(all_num_record[order+1])-1):
         if all_num_record[order+1][g_num+1] == 1:
             sort_indx.append(index[g_num])
@@ -427,8 +420,67 @@ for order in range(len(all_num_record)-1):
             row_table.append(table[g_num])
     sort_indx.append(index[-1])
     row_table.append(table[-1])
-    # df =pd.DataFrame(row_table,index=sort_indx,columns=columns)
-    # print df
+    N = 0
+    sort_columns = copy.deepcopy(columns)
+    sort_table =  [[[] for i in range(len(all_num_record[order])-1)] for i in range(len(all_npresult[order+1])+1)]
+    for g_num in range(len(all_num_record[order])-1):
+        if all_num_record[order][g_num+1] == 1:
+            for i in range(len(sort_table)):
+                sort_table[i][N]=row_table[i][g_num]
+            sort_columns[N]=columns[g_num]
+            N+=1
+    for g_num in range(len(all_num_record[order])-1):
+        if all_num_record[order][g_num+1] == -1:
+            for i in range(len(sort_table)):
+                sort_table[i][N]=row_table[i][g_num]
+            sort_columns[N]=columns[g_num]
+            N+=1
+    df =pd.DataFrame(sort_table,index=sort_indx,columns=sort_columns)
+    df.to_csv('csv/table'+sort_columns[0][0]+'.csv')
+
+
+
+    table =  [[[] for i in range(len(all_num_record[order])-1)] for i in range(len(all_npresult[order+1])+1)]
+    for removed_g in all_remove_g[order]:
+        # print removed_g
+        if removed_g[2] != None:
+            for f_g in range(len(all_npresult[order+1])):
+                finded =  np.where(np.all(all_npresult[order+1][f_g] == removed_g[2], axis=(1,2)))[0]
+                if len(finded)>0:
+                    pos= all_npresult_n[order+1][f_g][finded[0]]
+                    table[f_g][removed_g[0]].append(removed_g[3]*all_npresult_z[order+1][f_g][pos])
+        else :
+            table[len(all_npresult[order+1])][removed_g[0]].append(removed_g[1]+1)
+
+    columns=[]
+    N = 0
+    for i in range(1,len(all_num_record[order])):
+        if all_num_record[order][i] == 1:
+            columns.append(chr(ord(G_name)+order)+str(i-N))
+        else:
+            N +=1
+            columns.append(chr(ord(G_name)+order)+"N"+str(N))
+    index=[]
+    N = 0
+    for i in range(1,len(all_num_record[order+1])):
+        if all_num_record[order+1][i] == 1:
+            index.append(chr(ord(G_name)+order+1)+str(i-N))
+        else:
+            N +=1
+            index.append(chr(ord(G_name)+order+1)+"N"+str(N))
+    index.append("0")
+    sort_indx = []
+    row_table = []
+    for g_num in range(len(all_num_record[order+1])-1):
+        if all_num_record[order+1][g_num+1] == 1:
+            sort_indx.append(index[g_num])
+            row_table.append(table[g_num])
+    for g_num in range(len(all_num_record[order+1])-1):
+        if all_num_record[order+1][g_num+1] == -1:
+            sort_indx.append(index[g_num])
+            row_table.append(table[g_num])
+    sort_indx.append(index[-1])
+    row_table.append(table[-1])
     N = 0
     sort_columns = copy.deepcopy(columns)
     sort_table =  [[[] for i in range(len(all_num_record[order])-1)] for i in range(len(all_npresult[order+1])+1)]
@@ -466,7 +518,7 @@ for order in range(len(all_num_record)-1):
     if len(matrix)>0 and len(m_columns)>0 :
         df =pd.DataFrame(matrix,index=m_index,columns=m_columns)
         print (df)
-        df.to_csv('csv/table'+sort_columns[0][0]+'.csv')
+        df.to_csv('csv/matrix'+sort_columns[0][0]+'.csv')
     else:
         print ("none")
 
@@ -481,7 +533,7 @@ for order in range(len(all_num_record)-1):
     if len(matrix)>0 and len(m_columns)>0 :
         df =pd.DataFrame(matrix,index=m_index,columns=m_columns)
         print (df)
-        df.to_csv('csv/table'+sort_columns[0][0]+'N.csv')
+        df.to_csv('csv/matrix'+sort_columns[0][0]+'N.csv')
     else:
         print ("none")
 
