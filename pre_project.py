@@ -228,7 +228,7 @@ nodes = 8
 path = 'output.txt'
 record_file = open(path, 'w')
 record_file.close()
-savefile = True
+savefile = False
 ##############################################parm-end
 total_time = time.time()
 print("%d nodes, "%nodes,end="")

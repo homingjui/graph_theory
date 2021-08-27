@@ -1,6 +1,9 @@
 import math
 import numpy as np
 import copy
+from itertools import permutations,islice
+from time import time
+from pympler.asizeof import asizeof
 
 def X_cal(n):
     if n[0]==n[1]:
@@ -8,14 +11,37 @@ def X_cal(n):
     return float(100*min(n)+max(n))
 
 
-a=[[[1,2,3],[4,5,6]],[[7,8,9],[0,1,2]]]
-print a
-for i in a:
-    for j in range(2):
-        print i[j]
-        i[j]= sum(i[j])
-print a
+x= [1,2,3,4]
+b= [4,5,6,7]
+print(type(x))
+c = np.array(map(lambda i: b[i-1], x))
+print(x)
+print(type(math.copysign(1, -4)))
 
+
+# n=4
+# a= permutations(range(n))
+# print(asizeof(a))
+# s=0
+# for i in list(permutations(range(n))):
+#     print(type(i[0]))
+#     s+=1
+# print (s)
+
+# start = time()
+# x=list(permutations(range(n)))
+# print(time()-start)
+# print(len(x))
+# print(asizeof(x))
+#
+#
+# start = time()
+# x=tuple(permutations(range(n)))
+#
+# print(time()-start)
+# print(len(x))
+# print(x[0])
+# print(asizeof(x))
 
 # remove_g_n = 0
 # G_result=np.array([[[1,2],[1,3],[1,5],[2,3],[2,4],[3,6],[4,5],[4,6],[5,6]]])

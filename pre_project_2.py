@@ -1,4 +1,6 @@
 ####python3.7 -m pip install pympler
+####sudo ln -s /usr/bin/python3 /usr/bin/python
+####https://zhung.com.tw/article/install-python3-8-pip-for-ubuntu-linux/
 import csv
 import math
 import copy
@@ -9,7 +11,7 @@ import matplotlib.pyplot as plt
 import time
 import pandas as pd
 from IPython.display import display
-import itertools
+from itertools import permutations
 from pympler.asizeof import asizeof
 
 np.set_printoptions(threshold=np.inf)
@@ -18,36 +20,36 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 
 
-def perm(n,begin,end):
-    global n_array,side_array,now_permutation
-    if begin>=end:
-        side = False
-        for i in range(0,len(n)-1,2):
-            if n[i]+1==n[i+1] or n[i]-1==n[i+1]:
-                side=True
-                break
-            if (n[i]==0 and n[i+1]==len(n)-1) or (n[i+1]==0 and n[i]==len(n)-1):
-                side=True
-                break
-        if not side:
-            side_array[now_permutation]=n
-        else:
-            side_array[now_permutation]=0
-        n_array[now_permutation]=n
-        now_permutation+=1
-    else:
-        for num in range(begin,end):
-          n[num],n[begin]=n[begin],n[num]
-          perm(n,begin+1,end)
-          n[num],n[begin]=n[begin],n[num]
-#end def#####################################
-def permutation(num):
-    global n_array,side_array,now_permutation
-    n = np.arange(num,dtype=np.uint8)
-    n_array = np.repeat([n],math.factorial(num),axis=0)
-    side_array = np.repeat([n],math.factorial(num),axis=0)
-    now_permutation=0
-    perm(n,0,len(n))
+# def perm(n,begin,end):
+#     global n_array,side_array,now_permutation
+#     if begin>=end:
+#         side = False
+#         for i in range(0,len(n)-1,2):
+#             if n[i]+1==n[i+1] or n[i]-1==n[i+1]:
+#                 side=True
+#                 break
+#             if (n[i]==0 and n[i+1]==len(n)-1) or (n[i+1]==0 and n[i]==len(n)-1):
+#                 side=True
+#                 break
+#         if not side:
+#             side_array[now_permutation]=n
+#         else:
+#             side_array[now_permutation]=0
+#         n_array[now_permutation]=n
+#         now_permutation+=1
+#     else:
+#         for num in range(begin,end):
+#           n[num],n[begin]=n[begin],n[num]
+#           perm(n,begin+1,end)
+#           n[num],n[begin]=n[begin],n[num]
+# #end def#####################################
+# def permutation(num):
+#     global n_array,side_array,now_permutation
+#     n = np.arange(num,dtype=np.uint8)
+#     n_array = np.repeat([n],math.factorial(num),axis=0)
+#     side_array = np.repeat([n],math.factorial(num),axis=0)
+#     now_permutation=0
+#     perm(n,0,len(n))
 
 #end def#####################################
 def X_cal(n):
@@ -59,7 +61,10 @@ def X_cal(n):
         return 0
 #end def#####################################
 def sort(n):
-    x = n.tolist()
+    try:
+        x = n.tolist()
+    except:
+        x = list(n)
     flag = True
     for i in range(len(x)):
         if x[i][0]>x[i][1]:
@@ -75,9 +80,9 @@ def sort(n):
                 flag = True
     return x
 #end def#####################################
-def do_all_G(edge_list_array,G_result,num_record,npresult,npresult_z,npresult_n):
+def do_all_G(nodes_n,edge_list_array,G_result,num_record,npresult,npresult_z,npresult_n):
     print ("***do permutation!***")
-    iterations = len(n_array)
+    # iterations = len(n_array)
     edge_num = len(edge_list_array[0])
     ############################################### do all G
     for now_G in range(len(edge_list_array)):
@@ -95,27 +100,22 @@ def do_all_G(edge_list_array,G_result,num_record,npresult,npresult_z,npresult_n)
                 continue
         ######################################find all combination
         x_array = np.array([X_cal(i) for i in edge_list_array[now_G]])
-        x_prod = [np.prod(x_array[i+1:]*(-1)+x_array[i]) for i in range(edge_num)]
-        for now_iteration in range(iterations):
-            new_edge_list = copy.deepcopy(edge_list_array[now_G])
-            now_n = n_array[now_iteration]
-            for i in range(edge_num):
-                new_edge_list[i][0]=now_n[new_edge_list[i][0]-1]+1
-                new_edge_list[i][1]=now_n[new_edge_list[i][1]-1]+1
-            result_uni.append(sort(new_edge_list))
-            result.append(new_edge_list)
+        x_prod = [math.prod(x_array[i+1:]*(-1)+x_array[i]) for i in range(edge_num)]
+        result=[list(map(lambda i: [iterations[i[0]-1]+1,iterations[i[1]-1]+1] , edge_list_array[now_G])) for iterations in permutations(range(nodes_n))]
+        result_uni=list(map(lambda i: sort(i) ,result))
     ##########################################save file
         print (time.time()-start)
         result_uni,result_n =np.unique(result_uni,axis=0,return_index=True)####################################filter!!
         n_flag = False
         z_result_uni = []
+        start = time.time()
         for n_gaph in range(len(result)):
             ###############################get z,w
             new_edge_list_x = np.array([X_cal(j) for j in result[n_gaph]])
-            z = [np.prod(new_edge_list_x[i]-new_edge_list_x[i+1:])/x_prod[i] for i in range(edge_num)]
-            z = np.prod(z)
-            z_result_uni.append(int(z/abs(z)))
-            w =np.prod(new_edge_list_x/x_array)
+            z = [math.prod(new_edge_list_x[i]-new_edge_list_x[i+1:])/x_prod[i] for i in range(edge_num)]
+            z = math.prod(z)
+            z_result_uni.append(z/abs(z))
+            w =math.prod(new_edge_list_x/x_array)
             if n_flag==False:
                 if abs(z+1)+abs(w-1)< 0.0001:
                     if sort(result[n_gaph])==sort(result[0]):
@@ -145,7 +145,7 @@ def do_all_G(edge_list_array,G_result,num_record,npresult,npresult_z,npresult_n)
             write_head+="("+str(num_record.count(-1)+1)+"):"
         else:
             write_head+="("+str(num_record.count(1)+1)+"):"
-        write_head += str(edge_list_array[now_G].tolist())
+        write_head += str(edge_list_array[now_G])
         record_file.write(write_head)
         record_file.write("\n")
         record_file.close()
@@ -225,11 +225,11 @@ def edge_switch():
 #end def#####################################
 
 ########################################################################parm
-nodes =8
+nodes =10
 path = 'output.txt'
 record_file = open(path, 'w')
 record_file.close()
-savefile = True
+savefile = False
 ##############################################parm-end
 total_time = time.time()
 print("%d nodes, "%nodes,end="")
@@ -239,33 +239,30 @@ circle = []
 for i in range(1,nodes):
     circle.append([i,i+1])
 circle.append([1,nodes])
-permutation(nodes)
+# permutation(nodes)
 # print(asizeof(n_array))
 # 322696
-print(time.time()-total_time)
 
-# 14.239812135696411
-# 25.85783863067627
 
-# 10.722990274429321
-# 22.64511013031006
+# side_array=side_array[np.invert(np.all(side_array==0,axis=1))]+1
+# side_array = np.reshape(side_array,(len(side_array),-1,2))
+# for i in range(len(side_array)):
+#     side_array[i]=sort(side_array[i])
+# side_array =np.unique(side_array,axis=0)
+# # print np.shape(side_array)
+#
+# print(time.time()-total_time)
+#
+# circle = np.repeat([circle],np.shape(side_array)[0],axis=0)
+# edge_list_array = np.hstack((circle,side_array))
+# # print edge_list_array
+# for i in range(len(edge_list_array)):
+#     edge_list_array[i]=sort(edge_list_array[i])
+#
+# edge_list_array=[[[1, 2], [1, 3], [1, 8], [2, 3], [2, 4], [3, 4], [4, 5], [5, 6], [5, 7], [6, 7], [6, 8], [7, 8]]]
 
-side_array=side_array[np.invert(np.all(side_array==0,axis=1))]+1
-side_array = np.reshape(side_array,(len(side_array),-1,2))
-for i in range(len(side_array)):
-    side_array[i]=sort(side_array[i])
-side_array =np.unique(side_array,axis=0)
-# print np.shape(side_array)
+edge_list_array=[[[1, 2], [1, 3], [1, 10], [2, 3], [2, 4], [3, 4], [4, 5], [5, 6], [5, 7], [6, 7], [6, 9], [7, 8], [8, 9], [8, 10], [9, 10]]]
 
-print(time.time()-total_time)
-
-circle = np.repeat([circle],np.shape(side_array)[0],axis=0)
-edge_list_array = np.hstack((circle,side_array))
-# print edge_list_array
-for i in range(len(edge_list_array)):
-    edge_list_array[i]=sort(edge_list_array[i])
-
-edge_list_array=edge_list_array[:1]
 ###################################################do all G
 find_done = False
 all_npresult = []   ###########for all order result
@@ -284,7 +281,7 @@ npresult_z = []   ###########esult z
 npresult_n = []   ###########f result filter pos
 while not find_done:
     ########################################permutation
-    G_result,npresult,num_record,npresult_z,npresult_n=do_all_G(edge_list_array,G_result,num_record,npresult,npresult_z,npresult_n)
+    G_result,npresult,num_record,npresult_z,npresult_n=do_all_G(nodes,edge_list_array,G_result,num_record,npresult,npresult_z,npresult_n)
     print (str(np.shape(G_result)[0]-num_record[0])+" new G")
     # #######################################edge switching
     print ("\n***do edge switch***")
@@ -328,7 +325,7 @@ for n_order in range(1,nodes):
                 remove_g_or_x = np.array([X_cal(i) for i in remove_g_or])
                 h=1
                 for i in range(len(remove_g)):
-                    h*= np.prod(remove_g_x[i+1:]*(-1)+remove_g_x[i])/np.prod(remove_g_or_x[i+1:]*(-1)+remove_g_or_x[i])
+                    h*= math.prod(remove_g_x[i+1:]*(-1)+remove_g_x[i])/math.prod(remove_g_or_x[i+1:]*(-1)+remove_g_or_x[i])
                 remove_g = np.delete(remove_g,remove_g_edge,axis=0)
                 remove_g_all.append([remove_g_n,remove_g_edge,sort(remove_g),int(h/abs(h))])
             else :
@@ -344,7 +341,7 @@ for n_order in range(1,nodes):
     print ("%d nodes "%(nodes-n_order),end="")
     print("iterations: %d"%math.factorial(nodes-n_order))
     G_name=chr(ord(G_name)+1)
-    permutation(nodes-n_order)
+    # permutation(nodes-n_order)
     G_result = np.array([])   ###########for all G
     num_record = [0]
     npresult = []   ###########for all result filter
@@ -352,7 +349,7 @@ for n_order in range(1,nodes):
     npresult_n = []   ###########f result filter pos
     ########################################permutation
     # G_result,npresult,num_record,npresult_z,npresult_n=do_all_G(edge_list_array,G_result,num_record,npresult,npresult_z,npresult_n)
-    G_result,npresult,num_record,npresult_z,npresult_n=do_all_G(np.array([i[2] for i in remove_g_all if i[2]]),
+    G_result,npresult,num_record,npresult_z,npresult_n=do_all_G(nodes-n_order,np.array([i[2] for i in remove_g_all if i[2]]),
                                                                 G_result,num_record,npresult,npresult_z,npresult_n)
     print ("### "+str(len(G_result))+" 2n-"+str(n_order)+" G###")
     all_npresult.append(npresult)
