@@ -69,15 +69,16 @@ def sort(n):
     for i in range(len(x)):
         if x[i][0]>x[i][1]:
             x[i][1],x[i][0] = x[i][0],x[i][1]
-    while flag :
-        # print("shorting")
-        flag = False
-        for i in range(len(x)-1):
-            if not((x[i][0]<x[i+1][0]) or ((x[i][0]==x[i+1][0])and(x[i][1]<x[i+1][1]))):
-                # print(x[i],x[i+1])
-                x[i],x[i+1]=x[i+1],x[i]
-                # print(x[i],x[i+1])
-                flag = True
+    # while flag :
+    #     # print("shorting")
+    #     flag = False
+    #     for i in range(len(x)-1):
+    #         if not((x[i][0]<x[i+1][0]) or ((x[i][0]==x[i+1][0])and(x[i][1]<x[i+1][1]))):
+    #             # print(x[i],x[i+1])
+    #             x[i],x[i+1]=x[i+1],x[i]
+    #             # print(x[i],x[i+1])
+    #             flag = True
+    x=sorted(x)
     return x
 #end def#####################################
 def do_all_G(nodes_n,edge_list_array,G_result,num_record,npresult,npresult_z,npresult_n):
@@ -100,25 +101,28 @@ def do_all_G(nodes_n,edge_list_array,G_result,num_record,npresult,npresult_z,npr
                 continue
         ######################################find all combination
         x_array = np.array([X_cal(i) for i in edge_list_array[now_G]])
-        x_prod = [math.prod(x_array[i+1:]*(-1)+x_array[i]) for i in range(edge_num)]
+        x_prod = [math.prod(x_array[i]-x_array[i+1:]) for i in range(edge_num)]
         result=[list(map(lambda i: [iterations[i[0]-1]+1,iterations[i[1]-1]+1] , edge_list_array[now_G])) for iterations in permutations(range(nodes_n))]
-        result_uni=list(map(lambda i: sort(i) ,result))
+        print (time.time()-start)
+        result_uni=list(map(sort,result))
     ##########################################save file
         print (time.time()-start)
-        result_uni,result_n =np.unique(result_uni,axis=0,return_index=True)####################################filter!!
         n_flag = False
         z_result_uni = []
         start = time.time()
         for n_gaph in range(len(result)):
+
             ###############################get z,w
-            new_edge_list_x = np.array([X_cal(j) for j in result[n_gaph]])
-            z = [math.prod(new_edge_list_x[i]-new_edge_list_x[i+1:])/x_prod[i] for i in range(edge_num)]
-            z = math.prod(z)
+            # new_edge_list_x = np.array(list(map(X_cal,result[n_gaph])))
+            # new_edge_list_x = [X_cal(j) for j in result[n_gaph]]
+            new_edge_list_x = list(map(X_cal ,result[n_gaph]))
+            # z = math.prod([np.prod(new_edge_list_x[i]-new_edge_list_x[i+1:])/x_prod[i] for i in range(edge_num)])
+            z = math.prod([math.prod(map(lambda n: new_edge_list_x[i]-n,new_edge_list_x[i+1:]))/x_prod[i] for i in range(edge_num-1)])
             z_result_uni.append(z/abs(z))
-            w =math.prod(new_edge_list_x/x_array)
             if n_flag==False:
+                w =math.prod(new_edge_list_x/x_array)
                 if abs(z+1)+abs(w-1)< 0.0001:
-                    if sort(result[n_gaph])==sort(result[0]):
+                    if result_uni[n_gaph]==result_uni[0]:
                         n_flag = True
             ###############################write record
             if savefile:
@@ -162,6 +166,7 @@ def do_all_G(nodes_n,edge_list_array,G_result,num_record,npresult,npresult_z,npr
         ###########################################result
         # start = time.time()
         # print time.time()-start
+        result_uni,result_n =np.unique(result_uni,axis=0,return_index=True)####################################filter!!
         if n_flag:
             print (""+G_name+"N"+"("+str(num_record.count(-1))+")  ",end="")
         else:
@@ -225,7 +230,7 @@ def edge_switch():
 #end def#####################################
 
 ########################################################################parm
-nodes =10
+nodes =8
 path = 'output.txt'
 record_file = open(path, 'w')
 record_file.close()
@@ -235,10 +240,10 @@ total_time = time.time()
 print("%d nodes, "%nodes,end="")
 print("iterations: %d"%math.factorial(nodes))
 #############################################find all G
-circle = []
-for i in range(1,nodes):
-    circle.append([i,i+1])
-circle.append([1,nodes])
+# circle = []
+# for i in range(1,nodes):
+#     circle.append([i,i+1])
+# circle.append([1,nodes])
 # permutation(nodes)
 # print(asizeof(n_array))
 # 322696
@@ -259,9 +264,8 @@ circle.append([1,nodes])
 # for i in range(len(edge_list_array)):
 #     edge_list_array[i]=sort(edge_list_array[i])
 #
-# edge_list_array=[[[1, 2], [1, 3], [1, 8], [2, 3], [2, 4], [3, 4], [4, 5], [5, 6], [5, 7], [6, 7], [6, 8], [7, 8]]]
-
-edge_list_array=[[[1, 2], [1, 3], [1, 10], [2, 3], [2, 4], [3, 4], [4, 5], [5, 6], [5, 7], [6, 7], [6, 9], [7, 8], [8, 9], [8, 10], [9, 10]]]
+edge_list_array=[[[1, 2], [1, 3], [1, 8], [2, 3], [2, 4], [3, 4], [4, 5], [5, 6], [5, 7], [6, 7], [6, 8], [7, 8]]]
+# edge_list_array=[[[1, 2], [1, 3], [1, 10], [2, 3], [2, 4], [3, 4], [4, 5], [5, 6], [5, 7], [6, 7], [6, 9], [7, 8], [8, 9], [8, 10], [9, 10]]]
 
 ###################################################do all G
 find_done = False
@@ -445,7 +449,7 @@ for order in range(len(all_num_record)-1):
                 finded =  np.where(np.all(all_npresult[order+1][f_g] == removed_g[2], axis=(1,2)))[0]
                 if len(finded)>0:
                     pos= all_npresult_n[order+1][f_g][finded[0]]
-                    table[f_g][removed_g[0]].append(removed_g[3]*all_npresult_z[order+1][f_g][pos])
+                    table[f_g][removed_g[0]].append(int(removed_g[3]*all_npresult_z[order+1][f_g][pos]))
         else :
             table[len(all_npresult[order+1])][removed_g[0]].append(removed_g[1]+1)
 

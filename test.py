@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import copy
-from itertools import permutations,islice
+from itertools import permutations,islice,zip_longest
 from time import time
 from pympler.asizeof import asizeof
 
@@ -12,11 +12,19 @@ def X_cal(n):
 
 
 x= [1,2,3,4]
-b= [4,5,6,7]
-print(type(x))
-c = np.array(map(lambda i: b[i-1], x))
-print(x)
-print(type(math.copysign(1, -4)))
+b= [4,8,10,12]
+
+a=[[1, 2], [1, 3], [1, 8], [2, 3], [2, 4], [3, 4], [4, 5], [5, 6], [5, 7], [6, 7], [6, 8], [7, 8]]
+
+print(math.prod(a))
+
+z = math.prod([math.prod(a[i]-a[i+1:])/math.prod(a) for i in range(12)])
+print(z)
+
+print(math.prod(math.prod(map(lambda i:i-b[n],b[n+1:])) for n in range(3)))
+print(math.prod(map(lambda i:i-b[0],b[1:])))
+
+
 
 
 # n=4
