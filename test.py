@@ -4,26 +4,30 @@ import copy
 from itertools import permutations,islice,zip_longest
 from time import time
 from pympler.asizeof import asizeof
+from operator import mul
+from functools import reduce
+from sys import getsizeof
+import multiprocessing
 
-def X_cal(n):
-    if n[0]==n[1]:
-        return 0
-    return float(100*min(n)+max(n))
+
+def worker(procnum, return_dict):
+    """worker function"""
+    print(str(procnum) + " represent!")
+    return_dict[procnum] = procnum
 
 
-x= [1,2,3,4]
-b= [4,8,10,12]
+if __name__ == "__main__":
+    manager = multiprocessing.Manager()
+    return_dict = manager.dict()
+    jobs = []
+    for i in range(5):
+        p = multiprocessing.Process(target=worker, args=(i, return_dict))
+        jobs.append(p)
+        p.start()
 
-a=[[1, 2], [1, 3], [1, 8], [2, 3], [2, 4], [3, 4], [4, 5], [5, 6], [5, 7], [6, 7], [6, 8], [7, 8]]
-
-print(math.prod(a))
-
-z = math.prod([math.prod(a[i]-a[i+1:])/math.prod(a) for i in range(12)])
-print(z)
-
-print(math.prod(math.prod(map(lambda i:i-b[n],b[n+1:])) for n in range(3)))
-print(math.prod(map(lambda i:i-b[0],b[1:])))
-
+    for proc in jobs:
+        proc.join()
+    print(return_dict.values())
 
 
 
