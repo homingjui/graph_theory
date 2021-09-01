@@ -2,7 +2,7 @@
 ####sudo ln -s /usr/bin/python3 /usr/bin/python
 ####https://zhung.com.tw/article/install-python3-8-pip-for-ubuntu-linux/
 import csv
-import math
+from math import prod,factorial
 import copy
 import pickle
 import numpy as np
@@ -13,7 +13,7 @@ import pandas as pd
 from IPython.display import display
 from itertools import permutations
 from sys import getsizeof
-from multiprocessing import Process,Manager
+from multiprocessing import Pool
 
 np.set_printoptions(threshold=np.inf)
 pd.set_option('display.max_rows', None)
@@ -47,67 +47,42 @@ pd.set_option('display.width', None)
 # def permutation(num):
 #     global n_array,side_array,now_permutation
 #     n = np.arange(num,dtype=np.uint8)
-#     n_array = np.repeat([n],math.factorial(num),axis=0)
-#     side_array = np.repeat([n],math.factorial(num),axis=0)
+#     n_array = np.repeat([n],factorial(num),axis=0)
+#     side_array = np.repeat([n],factorial(num),axis=0)
 #     now_permutation=0
 #     perm(n,0,len(n))
-
+def grouped(iterable):
+    a = iter(iterable)
+    return zip(a, a)
 #end def#####################################
-def X_cal(n):
-    if n[0]<n[1]:
-        return float(100*n[0]+n[1])
-    elif n[0]>n[1]:
-        return float(100*n[1]+n[0])
-    elif n[0]==n[1]:
-        return 0
+def X_cal(x):
+    return_list=[]
+    for n in grouped(x):
+        if n[0]<n[1]:
+            return_list.append(float(100*n[0]+n[1]))
+        elif n[0]>n[1]:
+            return_list.append(float(100*n[1]+n[0]))
+        elif n[0]==n[1]:
+            return_list.append(0)
+    return return_list
 #end def#####################################
 def sort(n):
-    try:
-        x = n.tolist()
-    except:
-        x = list(n)
-    flag = True
-    for i in range(len(x)):
-        if x[i][0]>x[i][1]:
-            x[i][1],x[i][0] = x[i][0],x[i][1]
-    # while flag :
-    #     # print("shorting")
-    #     flag = False
-    #     for i in range(len(x)-1):
-    #         if not((x[i][0]<x[i+1][0]) or ((x[i][0]==x[i+1][0])and(x[i][1]<x[i+1][1]))):
-    #             # print(x[i],x[i+1])
-    #             x[i],x[i+1]=x[i+1],x[i]
-    #             # print(x[i],x[i+1])
-    #             flag = True
-    x=sorted(x)
-    return x
-    # return np.array(x,dtype=np.int8)
+    print(n)
+    for i in grouped(n):
+        print(i)
+        if i[0]>i[1]:
+            i[1],i[0] = i[0],i[1]
+    return sorted(x)
 #end def#####################################
-def perm(result,edge_num,x_prod,X_cal_now_G,n_flag,start,end):
-    z_result_uni = []
-    for index,n_gaph in enumerate(result,int(start)):
-        ###############################get z,w
-        new_edge_list_x = list(map(X_cal ,n_gaph))
-        # z = math.prod([np.prod(new_edge_list_x[i]-new_edge_list_x[i+1:])/x_prod[i] for i in range(edge_num)])
-        z = math.prod([math.prod(map(lambda n: new_edge_list_x[i]-n,new_edge_list_x[i+1:]))/x_prod[i] for i in range(edge_num-1)])
-        z_result_uni.append(z/abs(z))
-        if n_flag[0]==False:
-            new_edge_list_x=math.prod(new_edge_list_x)
-            w =new_edge_list_x/X_cal_now_G
-            if abs(z+1)+abs(w-1)< 0.0001:
-                if (new_edge_list_x==X_cal_now_G):
-                    n_flag[0] = True
-        if index>=end:
-            break
-    return z_result_uni
-
+def r1(iterations):
+    return list(map(lambda i: [iterations[i[0]-1]+1,iterations[i[1]-1]+1] , now_G_do))
 def do_all_G(nodes_n,edge_list_array,G_result,num_record,npresult,npresult_z,npresult_n):
+    global now_G_do
     print ("***do permutation!***")
     # iterations = len(n_array)
-    edge_num = len(edge_list_array[0])
+    edge_num = len(edge_list_array[0])/2
     ############################################### do all G
     for now_G in range(len(edge_list_array)):
-        start = time.time()
         write_string=""
         if len(G_result)>0:
             same_flag = False
@@ -118,37 +93,32 @@ def do_all_G(nodes_n,edge_list_array,G_result,num_record,npresult,npresult_z,npr
             if same_flag:
                 continue
         ######################################find all combination
-
-        x_array = np.array([X_cal(i) for i in edge_list_array[now_G]])
-        x_prod = [math.prod(x_array[i]-x_array[i+1:]) for i in range(edge_num)]
-        result=map(lambda iterations: map(lambda i: [iterations[i[0]-1]+1,iterations[i[1]-1]+1] , edge_list_array[now_G]) , permutations(range(nodes_n)))
-        # result=[list(map(lambda i: [iterations[i[0]-1]+1,iterations[i[1]-1]+1] , edge_list_array[now_G])) for iterations in permutations(range(nodes_n))]
-        print (time.time()-start)
+        x_array = np.array(X_cal(edge_list_array[now_G]))
+        x_prod = [prod(item-x_array[index+1:]) for index,item in enumerate(x_array)]
+        now_G_do = edge_list_array[now_G]
     ##########################################save file
+        n_flag = False
+        z_result_uni = []
+        result=[]
         start = time.time()
-        X_cal_now_G = math.prod(map(X_cal ,edge_list_array[now_G]))
-        total_len = math.factorial(nodes)
-        return_dir = Manager().dict()
-        return_dir[0]=False
-        Process_a = Process(target=perm, args=(result,edge_num,x_prod,X_cal_now_G,return_dir,0,total_len/2-1))
-        Process_b = Process(target=perm, args=(result,edge_num,x_prod,X_cal_now_G,return_dir,total_len/2,total_len-1))
-        Process_a.start()
-        Process_b.start()
-        Process_a.join()
-        Process_b.join()
-        n_flag = return_dir[0]
-        print(n_flag)
-            # ###############################write record
-            # if savefile:
-            #     write_string+="\n\n"+str(index)+", f="
-            #     for i in range(len(n_array[0])):
-            #         write_string+=str(i+1)+":"+str(n_array[index][i]+1)+",  "
-            #     write_string += "\n"
-            #     write_string += str(n_gaph.tolist())
-            #         # print n_gaph
-            #     write_string += "\tZ="+str(z)+", W="+str((abs(z+1)+abs(w-1)))
-
-        print (time.time()-start)
+        show=0.001
+        for n_gaph in map( r1, permutations(range(nodes_n))):
+            # print(n_gaph)
+            if len(z_result_uni)>=int(factorial(nodes)*show):
+                print(str(int(show*100)+1)+"%  time:"+str(time.time()-start), end = '\r')
+                show+=0.001
+            ###############################get z,w
+            result.append(sum(n_gaph, []))
+            new_edge_list_x = list(map(X_cal ,n_gaph))
+            z = prod([prod(map(lambda n: new_edge_list_x[i]-n,new_edge_list_x[i+1:]))/x_prod[i] for i in range(edge_num-1)])
+            z_result_uni.append(z/abs(z))
+            if n_flag==False:
+                new_edge_list_x=prod(new_edge_list_x)
+                w =new_edge_list_x/x_array
+                if abs(z+1)+abs(w-1)< 0.0001:
+                    if (new_edge_list_x==x_array):
+                        n_flag = True
+        print("")
         record_file = open(path, 'a')
         path_arr = 'output/'+G_name
         if n_flag:
@@ -167,19 +137,13 @@ def do_all_G(nodes_n,edge_list_array,G_result,num_record,npresult,npresult_z,npr
         record_file.write(write_head)
         record_file.write("\n")
         record_file.close()
-        if savefile:
-            record_arr_file = open(path_arr, 'w')
-            record_arr_file.write(write_head)
-            record_arr_file.write(write_string)
-            record_arr_file.close()
         ############################################write num_record
         if n_flag:
             num_record.append(-1)
         else:
             num_record.append(1)
         ###########################################result
-        result=list(map(sort,map(lambda iterations: map(lambda i: [iterations[i[0]-1]+1,iterations[i[1]-1]+1] , edge_list_array[now_G]) , permutations(range(nodes_n)))))
-        result,result_n =np.unique(result,axis=0,return_index=True)####################################filter!!
+        result,result_n =np.unique(list(map(sort,result)),axis=0,return_index=True)####################################filter!!
         print (time.time()-start)
         if n_flag:
             print (""+G_name+"N"+"("+str(num_record.count(-1))+")  ",end="")
@@ -235,7 +199,7 @@ def edge_switch():
 #end def#####################################
 
 ########################################################################parm
-nodes =10
+nodes =8
 path = 'output.txt'
 record_file = open(path, 'w')
 record_file.close()
@@ -243,7 +207,7 @@ savefile = False
 ##############################################parm-end
 total_time = time.time()
 print("%d nodes, "%nodes,end="")
-print("iterations: %d"%math.factorial(nodes))
+print("iterations: %d"%factorial(nodes))
 #############################################find all G
 circle = []
 for i in range(1,nodes):
@@ -262,9 +226,8 @@ for n in permutations(range(nodes)):
         side_arr = n
         break
 
-side_array = np.reshape(side_arr,(-1,2))+1
-
-edge_list_array = [sort(np.vstack((circle,side_array)))]
+side_array = np.array(side_arr)+1
+edge_list_array=[[*sum(circle,[]),*side_array]]
 print (edge_list_array)
 # edge_list_array=[[[1, 2], [1, 3], [1, 8], [2, 3], [2, 4], [3, 4], [4, 5], [5, 6], [5, 7], [6, 7], [6, 8], [7, 8]]]
 # edge_list_array=[[[1, 2], [1, 3], [1, 10], [2, 3], [2, 4], [3, 4], [4, 5], [5, 6], [5, 7], [6, 7], [6, 9], [7, 8], [8, 9], [8, 10], [9, 10]]]
@@ -331,7 +294,7 @@ for n_order in range(1,nodes):
                 remove_g_or_x = np.array([X_cal(i) for i in remove_g_or])
                 h=1
                 for i in range(len(remove_g)):
-                    h*= math.prod(remove_g_x[i+1:]*(-1)+remove_g_x[i])/math.prod(remove_g_or_x[i+1:]*(-1)+remove_g_or_x[i])
+                    h*= prod(remove_g_x[i+1:]*(-1)+remove_g_x[i])/prod(remove_g_or_x[i+1:]*(-1)+remove_g_or_x[i])
                 remove_g = np.delete(remove_g,remove_g_edge,axis=0)
                 remove_g_all.append([remove_g_n,remove_g_edge,sort(remove_g),int(h/abs(h))])
             else :
@@ -345,7 +308,7 @@ for n_order in range(1,nodes):
     ###################################################do all G
     find_done = False
     print ("%d nodes "%(nodes-n_order),end="")
-    print("iterations: %d"%math.factorial(nodes-n_order))
+    print("iterations: %d"%factorial(nodes-n_order))
     G_name=chr(ord(G_name)+1)
     # permutation(nodes-n_order)
     G_result = np.array([])   ###########for all G
