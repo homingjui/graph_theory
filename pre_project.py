@@ -107,6 +107,7 @@ def do_all_G(nodes_n,edge_list_array,G_result,num_record,npresult,npresult_z,npr
         n_flag = False
         z_result_uni = []
         start = time.time()
+        qq=0
         for n_gaph in range(len(result)):
 
             ###############################get z,w
@@ -118,6 +119,10 @@ def do_all_G(nodes_n,edge_list_array,G_result,num_record,npresult,npresult_z,npr
             z_result_uni.append(z/abs(z))
             if n_flag==False:
                 w =math.prod(new_edge_list_x/x_array)
+                print(w,z)
+                qq+=1
+                if qq==10:
+                    print(WWW)
                 if abs(z+1)+abs(w-1)< 0.0001:
                     if result_uni[n_gaph]==result_uni[0]:
                         n_flag = True

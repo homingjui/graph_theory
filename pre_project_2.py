@@ -56,10 +56,20 @@ def sort(n):
     return sum(sorted(x),[])
 #end def#####################################
 def r1(iterations):
-    return list(map(lambda i: iterations[i-1]+1 , now_G_do))
+    global n_flag
+    arr = list(map(lambda i: iterations[i-1]+1 , now_G_do))
+    new_edge_list_x = X_cal(arr)
+    z = prod([ prod( map(lambda n: item-n , new_edge_list_x[index+1:]))/x_prod[index] for index,item in enumerate(new_edge_list_x)])
+    if not n_flag:
+        w =prod(new_edge_list_x)/x_cal_x_array
+        if abs(z+1)+abs(w-1)< 0.0001:
+            n_flag = True
+    arr=sort(arr)
+    arr.append(z/abs(z))
+    return tuple(arr)
     # return sort(map(lambda i: iterations[i-1]+1 , now_G_do))
 def do_all_G(nodes_n,edge_list_array,G_result,num_record,npresult,npresult_z):
-    global now_G_do
+    global now_G_do,x_prod,n_flag,x_cal_x_array
     print ("***do permutation!***")
     # iterations = len(n_array)
     ############################################### do all G
@@ -81,29 +91,11 @@ def do_all_G(nodes_n,edge_list_array,G_result,num_record,npresult,npresult_z):
     ##########################################save file
         n_flag = False
         start = time.time()
-        z_result_uni = []
         result=map( r1, permutations(range(nodes_n)))
-        result=set(tuple(element) for element in result)
-        print(len(result))
-        result=[]
-        for n_gaph in map( r1, permutations(range(nodes_n))):
-            if len(z_result_uni)%100==0:
-                print("%.6f time: %.6f"%((len(z_result_uni)/factorial(nodes)),(time.time()-start)), end = '\r')
-            ###############################get z,w
-            new_edge_list_x = X_cal(n_gaph)
-            z = prod([ prod( map(lambda n: item-n , new_edge_list_x[index+1:]))/x_prod[index] for index,item in enumerate(new_edge_list_x)])
-
-            if n_flag==False and abs(z+1)<0.0001:
-                new_edge_list_x_prod=prod(new_edge_list_x)
-                w =new_edge_list_x_prod/x_cal_x_array
-                if abs(z+1)+abs(w-1)< 0.0001:
-                    n_flag = True
-
-            sort_n_gaph = sort(n_gaph)
-            if not sort_n_gaph in result:
-                result.append(sort_n_gaph)
-                z_result_uni.append(z/abs(z))
-
+        result=np.array(list(set(result)),dtype=np.int8)
+        print (time.time()-start)
+        z_result_uni = result[:,-1].tolist()
+        result = result[:,:-1].tolist()
         print (time.time()-start)
         for_G_result=list(grouped(now_G_do))
         record_file = open(path, 'a')
@@ -173,20 +165,12 @@ def edge_switch():
                             same_flag=True
                             # break
                     if not same_flag:
-                        same_flag = False
-                        find_g = sum(sort_list(new_g),[])
-                        for  i in  npresult:
-                            if find_g in i:
-                                same_flag = True
-                                break
-                        if not same_flag:
-                            all_new_g.append(sort_list(new_g))
-    print()
+                        all_new_g.append(sort_list(new_g))
     return all_new_g
 #end def#####################################
 
 ########################################################################parm
-nodes =8
+nodes =10
 path = 'output.txt'
 record_file = open(path, 'w')
 record_file.close()
@@ -335,11 +319,13 @@ for order in range(len(all_num_record)-1):
     for removed_g in all_remove_g[order]:
         # print removed_g
         if removed_g[2] != None:
+            find_ing = sum(removed_g[2],[])
             for f_g,results in enumerate(all_npresult[order+1]):
-                if sum(removed_g[2],[]) in results:
+                if find_ing in results:
                     for index,item in enumerate(results):
-                        if item==sum(removed_g[2],[]):
+                        if item==find_ing:
                             table[f_g][removed_g[0]].append([removed_g[1]+1,removed_g[3],all_npresult_z[order+1][f_g][index]])
+                            break
         else :
             table[len(all_npresult[order+1])][removed_g[0]].append(removed_g[1]+1)
 
