@@ -13,8 +13,10 @@ import pandas as pd
 from IPython.display import display
 from itertools import permutations
 from sys import getsizeof
-from multiprocessing import Pool
+from multiprocessing import Pool,Manager
+import gc
 
+my_manager = Manager().dict()
 np.set_printoptions(threshold=np.inf)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
@@ -56,20 +58,19 @@ def sort(n):
     return sum(sorted(x),[])
 #end def#####################################
 def r1(iterations):
-    global n_flag
     arr = list(map(lambda i: iterations[i-1]+1 , now_G_do))
     new_edge_list_x = X_cal(arr)
     z = prod([ prod( map(lambda n: item-n , new_edge_list_x[index+1:]))/x_prod[index] for index,item in enumerate(new_edge_list_x)])
-    if not n_flag:
-        w =prod(new_edge_list_x)/x_cal_x_array
-        if abs(z+1)+abs(w-1)< 0.0001:
-            n_flag = True
+
+    w =prod(new_edge_list_x)/x_cal_x_array
+    if abs(z+1)+abs(w-1)< 0.0001:
+        my_manager["n_flag"] = True
     arr=sort(arr)
     arr.append(z/abs(z))
     return tuple(arr)
     # return sort(map(lambda i: iterations[i-1]+1 , now_G_do))
 def do_all_G(nodes_n,edge_list_array,G_result,num_record,npresult,npresult_z):
-    global now_G_do,x_prod,n_flag,x_cal_x_array
+    global now_G_do,x_prod,x_cal_x_array
     print ("***do permutation!***")
     # iterations = len(n_array)
     ############################################### do all G
@@ -89,14 +90,22 @@ def do_all_G(nodes_n,edge_list_array,G_result,num_record,npresult,npresult_z):
         x_cal_x_array=prod(x_array)
         x_prod = [prod(item-x_array[index+1:]) for index,item in enumerate(x_array)]
     ##########################################save file
-        n_flag = False
+        # n_flag = False
+        my_manager["n_flag"]=False
         start = time.time()
-        result=map( r1, permutations(range(nodes_n)))
-        result=np.array(list(set(result)),dtype=np.int8)
-        print (time.time()-start)
-        z_result_uni = result[:,-1].tolist()
-        result = result[:,:-1].tolist()
-        print (time.time()-start)
+        with Pool(3) as pool:
+            result=set(pool.map( r1, permutations(range(nodes_n))))
+            print (time.time()-start)
+            z_result_uni = list(map(lambda i: i[-1],result))
+            result = list(map(lambda i: list(i[:-1]),result))
+            # z_result_uni = result[:,-1].tolist()
+            # result = result[:,:-1].tolist()
+            print (time.time()-start)
+            n_flag=my_manager["n_flag"]
+            print(n_flag)
+            pool.close()
+            pool.join()
+        gc.collect()
         for_G_result=list(grouped(now_G_do))
         record_file = open(path, 'a')
         path_arr = 'output/'+G_name
@@ -383,7 +392,7 @@ for order in range(len(all_num_record)-1):
                     if type(k)==list:
                         sort_table[index_i][index_j][index_k]=int(k[1]*k[2])
     df =pd.DataFrame(sort_table,index=sort_indx,columns=sort_columns)
-    print (df)
+    # print (df)
 
     for row in sort_table[:-1]:
         for i in range(len(row)):

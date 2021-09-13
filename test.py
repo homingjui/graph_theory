@@ -1,28 +1,35 @@
 import math
 import numpy as np
 from itertools import permutations,islice,zip_longest
-from time import time
+from time import time,sleep
 from pympler.asizeof import asizeof
 from operator import mul
 from functools import reduce
 from sys import getsizeof
-
-w=105
-print(w%100)
+import pickle
 
 
-a=[[[1, 2], [1, 3], [1, 12], [2, 3], [2, 4], [3, 4], [4, 5], [5, 6], [5, 7], [6, 7], [6, 8], [7, 8], [8, 9], [9, 10], [9, 11], [10, 11], [10, 12], [11, 12]]]
-print(asizeof(a))
-a = sum(a[0], [])
-print(a)
-print(asizeof(a))
-def grouped(iterable):
-    a = iter(iterable)
-    return zip(a, a)
+l = list(np.zeros((math.factorial(11)*5)))
+print(len(l))
+out = open("temp/test.pkl","wb")
+pickle.dump(l, out)
+# del l
+# sleep(5)
 
+# print(pickle.load(open("temp/CN(1).pkl","rb")))
 
-for x, y in grouped(a):
-   print (x,y)
+# a=[[[1, 2], [1, 3], [1, 12], [2, 3], [2, 4], [3, 4], [4, 5], [5, 6], [5, 7], [6, 7], [6, 8], [7, 8], [8, 9], [9, 10], [9, 11], [10, 11], [10, 12], [11, 12]]]
+# print(asizeof(a))
+# a = sum(a[0], [])
+# print(a)
+# print(asizeof(a))
+# def grouped(iterable):
+#     a = iter(iterable)
+#     return zip(a, a)
+#
+#
+# for x, y in grouped(a):
+#    print (x,y)
 
 
 # n=4
