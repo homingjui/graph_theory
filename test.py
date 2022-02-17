@@ -8,11 +8,50 @@ from functools import reduce
 from sys import getsizeof
 import pickle
 
+def sort(n):
+    x=[]
+    for i in grouped(n):
+        if i[0]>i[1]:
+            x.append([i[1],i[0]])
+        else:
+            x.append([i[0],i[1]])
+    return sum(sorted(x),[])
 
-l = list(np.zeros((math.factorial(11)*5)))
-print(len(l))
-out = open("temp/test.pkl","wb")
-pickle.dump(l, out)
+def grouped(iterable):
+    a = iter(iterable)
+    return list(zip(a, a))
+
+# a = [1, 2, 1, 3, 1, 6, 1, 7, 2, 3, 2, 4, 3, 4, 4, 5, 5, 6, 5, 7, 6, 7]
+# b = [1, 2, 1, 3, 1, 7, 2, 3, 2, 4, 3, 4, 4, 5, 4, 6, 5, 6, 5, 7, 6, 7]
+# b = [1, 2, 1, 3, 1, 4, 1, 7, 2, 3, 2, 6, 3, 4, 4, 5, 5, 6, 5, 7, 6, 7]
+
+# a_2 = grouped(a)
+# b_2 = grouped(b)
+# c = grouped(c)
+
+x= np.arange(27).reshape((3,3,3))
+
+print(0/5)
+print(0/0)
+
+print(np.average(x,axis=0))
+
+print()
+
+# print(np.array(range(5)))
+
+# f = open('output.txt', 'r').read().split('\n')
+# arr = []
+# for i in f[:-1]:
+#     print(i)
+#     i=i.split('[(')[1]
+#     i=i.split(')]')[0]
+#     i=i.split(', ')
+#     row = []
+#     for j in i:
+#         row.append([int(j[0]),int(j[-1])])
+#     arr.append(row)
+# print(arr)
 # del l
 # sleep(5)
 

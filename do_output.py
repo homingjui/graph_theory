@@ -1,6 +1,3 @@
-####python3.7 -m pip install pympler
-####sudo ln -s /usr/bin/python3 /usr/bin/python
-####https://zhung.com.tw/article/install-python3-8-pip-for-ubuntu-linux/
 import csv
 from math import prod,factorial
 import copy
@@ -17,13 +14,32 @@ from os import listdir,remove
 from pickle import load,dump
 from multiprocessing import Pool,Manager
 import gc
-
 my_manager = Manager().dict()
-
 np.set_printoptions(threshold=np.inf)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
+
+path = 'output.txt'
+my_file = open(path, "r")
+content = my_file.read()
+content = content.split('\n')
+read_arr=[]
+n_record = []
+for i in content[:-1]:
+    x,i=i.split('[(')
+    i=i.split(')]')[0]
+    i=i.split('), (')
+    row=[]
+    for j in i:
+        j=j.split(', ')
+        row.append([int(j[0]), int(j[-1])])
+    read_arr.append(row)
+    if 'N' in x:
+        n_record.append(-1)
+    else:
+        n_record.append(1)
+
 
 def grouped(iterable):
     a = iter(iterable)
@@ -60,93 +76,28 @@ def sort(n):
             x.append([i[0],i[1]])
     return sum(sorted(x),[])
 #end def#####################################
-def r1(iterations):
-    global n_flag
-    arr = list(map(lambda i: iterations[i-1]+1 , now_G_do))
-    new_edge_list_x = X_cal(arr)
-    z = prod([ prod( map(lambda n: item-n , new_edge_list_x[index+1:]))/x_prod[index] for index,item in enumerate(new_edge_list_x)])
 
-    w =prod(new_edge_list_x)/x_cal_x_array
-    if abs(z+1)+abs(w-1)< 0.0001:
-        my_manager["n_flag"] = True
-    arr=sort(arr)
-    arr.append(z/abs(z))
-    return tuple(arr)
-    # return sort(map(lambda i: iterations[i-1]+1 , now_G_do))
 def do_all_G(nodes_n,edge_list_array,G_result,num_record):
-    global now_G_do,x_prod,n_flag,x_cal_x_array
+    global now_G_do,x_prod,n_flag,x_cal_x_array,result
     print ("***do permutation!***")
     # iterations = len(n_array)
     ############################################### do all G
     for now_G in range(len(edge_list_array)):
-        write_string=""
-        now_G_do = sum(edge_list_array[now_G],[])
-        if len(G_result)>0:
-            same_flag = False
-            for file in listdir("temp"):
-                if file[0]==G_name and not "z" in file:
-                    with open("temp/"+file,"rb") as out:
-                        if now_G_do in load(out).tolist():
-                            same_flag = True
-                            break
-            # same_flag = False
-            # for i in npresult:
-            #     if now_G_do in i:
-            #         same_flag = True
-            #         break
-            if same_flag:
-                continue
-        ######################################find all combination
-        x_array = np.array(X_cal(now_G_do))
-        x_cal_x_array=prod(x_array)
-        x_prod = [prod(item-x_array[index+1:]) for index,item in enumerate(x_array)]
-    ##########################################save file
-        my_manager["n_flag"]=False
-        start = time.time()
-        with Pool(4) as pool:
-            result=list(pool.imap( r1, permutations(range(nodes_n)), chunksize=max(factorial(nodes_n-1)//4,1)))
-            # result=set(pool.imap( r1, permutations(range(nodes_n)),chunksize=factorial(nodes)//3))
-            print (time.time()-start)
-            print(len(result))
-            n_flag=my_manager["n_flag"]
-            write_head=G_name
-            if n_flag:
-                write_head+="N"
-                write_head+="("+str(num_record[1:].count(-1)+1)+")"
-            else:
-                write_head+="("+str(num_record[1:].count(1)+1)+")"
+        if edge_list_array[now_G] == 0:
+            continue
+        old_read = True
 
-            z_result_uni = np.array(list(map(lambda i: i[-1],result)),dtype=np.int8)
-            with open("temp/"+write_head+"z.pkl","wb") as out:
-                pickle.dump(z_result_uni, out)
-            del z_result_uni
-            result = np.array(list(map(lambda i: i[:-1],result)),dtype=np.int8)
-            with open("temp/"+write_head+".pkl","wb") as out:
-                pickle.dump(result, out)
-            result_len = len(result)
-            del result
-            # z_result_uni = result[:,-1].tolist()
-            # result = result[:,:-1].tolist()
-            print (time.time()-start)
-            # print(n_flag)
-            print(n_flag)
-            pool.close()
-            pool.join()
-        gc.collect()
-        for_G_result=list(grouped(now_G_do))
-        writeing_head = ":"+write_head + str(for_G_result)
-        path_arr = 'output/'+G_name
-        if n_flag:
-            path_arr+="N"
-            path_arr+=str(num_record[1:].count(-1)+1)
-        else:
-            path_arr+=str(num_record[1:].count(1)+1)
-        path_arr+='.txt'
-        record_file = open(path, 'a')
-        record_file.write(writeing_head)
-        record_file.write("\n")
-        record_file.close()
-        ############################################write num_record
+        for index,item in enumerate(read_arr):
+            if edge_list_array[now_G] == item:
+                print("True")
+                old_read = False
+                for_G_result=list(edge_list_array[now_G])
+                n_flag=(n_record[index]==-1)
+                read_arr[index]=0
+                break
+        if old_read:
+            continue
+
         if n_flag:
             num_record.append(-1)
         else:
@@ -156,13 +107,11 @@ def do_all_G(nodes_n,edge_list_array,G_result,num_record):
             print (""+G_name+"N"+"("+str(num_record[1:].count(-1))+")  ",end="")
         else:
             print (""+G_name+"("+str(num_record[1:].count(1))+")  ",end="")
-        print("num f(G) %d"%(result_len))
+        # print("num f(G) %d"%(result_len))
         if len(G_result)==0:
             G_result= np.array([for_G_result])
         else:
             G_result= np.vstack((G_result,[for_G_result]))
-        ###################################################################
-        gc.collect()
     return G_result,num_record
 #end def#####################################
 def edge_switch():
@@ -200,19 +149,20 @@ def edge_switch():
 #end def#####################################
 
 ########################################################################parm
-nodes =8
-path = 'output.txt'
-record_file = open(path, 'w')
-record_file.close()
+nodes = 12
+cpus = 96
+# path = 'output.txt'
+# record_file = open(path, 'w')
+# record_file.close()
 ##############################################parm-end
 total_time = time.time()
 print("%d nodes, "%nodes,end="")
 print("iterations: %d"%factorial(nodes))
 #############################################find all G
-for file in listdir("temp"):
-    remove("temp/"+file)
-    for file in listdir("csv"):
-        remove("csv/"+file)
+# for file in listdir("temp"):
+#    remove("temp/"+file)
+for file in listdir("csv"):
+   remove("csv/"+file)
 ################################################
 circle = []
 for i in range(1,nodes):
@@ -235,13 +185,9 @@ side_array = np.reshape(side_arr,(-1,2))+1
 
 edge_list_array = [sort_list(np.vstack((circle,side_array)))]
 print (edge_list_array)
-# edge_list_array=[[[1, 2], [1, 3], [1, 8], [2, 3], [2, 4], [3, 4], [4, 5], [5, 6], [5, 7], [6, 7], [6, 8], [7, 8]]]
-# edge_list_array=[[[1, 2], [1, 3], [1, 10], [2, 3], [2, 4], [3, 4], [4, 5], [5, 6], [5, 7], [6, 7], [6, 9], [7, 8], [8, 9], [8, 10], [9, 10]]]
 
 ###################################################do all G
-# all_npresult = []   ###########for all order result
-# all_npresult_z = []   ###########order result z
-# all_npresult_n = []   ###########order result pos
+find_done = False
 all_G_result = []  ###########for all order G result
 all_num_record = []  ########for all order N
 all_remove_g = []
@@ -250,33 +196,10 @@ G_result = np.array([])   ###########for all G
 num_record = [0]
 G_name="A"
 
-# npresult = []   ###########for all result filter
-# npresult_z = []   ###########esult z
-# npresult_n = []   ###########f result filter pos
-# find_done = False
-# while not find_done:
-#     ########################################permutation
-#     G_result,num_record=do_all_G(nodes,edge_list_array,G_result,num_record)
-#     print (str(np.shape(G_result)[0]-num_record[0])+" new G")
-#     # #######################################edge switching
-#     print ("\n***do edge switch***")
-#     edge_list_array=edge_switch()
-#     num_record[0]=np.shape(G_result)[0]
-#     print ("find "+str(len(edge_list_array))+" new graph to check\n")
-#     if len(edge_list_array)==0:
-#         find_done=True
-#     print (time.time()-total_time)
-
 G_result=np.array(edge_list_array)
 
-
 print ("### "+str(len(G_result))+" G ###")
-# print "and "+str(len(npresult))+" f(G)###"
-# all_npresult.append(npresult)
-# all_G_result.append(G_result)
 all_num_record.append(num_record)
-# all_npresult_z.append(npresult_z)
-# all_npresult_n.append(npresult_n)
 ##########################################remove edge
 for n_order in range(1,nodes):
     print ("\n\n***remove edge***")
@@ -320,11 +243,6 @@ for n_order in range(1,nodes):
     # permutation(nodes-n_order)
     G_result = np.array([])   ###########for all G
     num_record = [0]
-    # npresult = []   ###########for all result filter
-    # npresult_z = []   ###########esult z
-    # npresult_n = []   ###########f result filter pos
-    ########################################permutation
-    # G_result,npresult,num_record,npresult_z,npresult_n=do_all_G(edge_list_array,G_result,num_record,npresult,npresult_z,npresult_n)
 
     edge_list_array = [i[2] for i in remove_g_all if i[2]]
     find_done = False
@@ -332,16 +250,24 @@ for n_order in range(1,nodes):
         ########################################permutation
         G_result,num_record=do_all_G(nodes-n_order,edge_list_array,G_result,num_record)
         print (str(np.shape(G_result)[0]-num_record[0])+" new G")
-        # #######################################edge switching
+        #######################################edge switching
         print ("\n***do edge switch***")
-        edge_list_array=edge_switch()
+        arr=edge_switch()
+        edge_list_array=[]
+        # print(G_result)
+        for i in arr:
+            same_flag = False
+            for j in G_result:
+                if (j == i).all() :
+                    same_flag = True
+            if not same_flag:
+                edge_list_array.append(i)
+
         num_record[0]=np.shape(G_result)[0]
         print ("find "+str(len(edge_list_array))+" new graph to check\n")
         if len(edge_list_array)==0:
             find_done=True
-
-
-
+        print (time.time()-total_time)
     print ("### "+str(len(G_result))+" 2n-"+str(n_order)+" G###")
     # all_npresult.append(npresult)
     all_G_result.append(G_result)
@@ -351,41 +277,56 @@ for n_order in range(1,nodes):
     print (time.time()-total_time)
 
 
-
 for i in all_remove_g:
     print (len(i),end="")
     print (" ",end="")
 print ("")
 
+
+def calling_back(a):
+    if my_manager["Z"]==None:
+        my_manager["Z"]=0
+
+def r2(iterations):
+    arr = list(map(lambda i: iterations[i-1]+1 , for_find))
+    sort_arr = sort(arr)
+    for removed_g in all_remove_g[order]:
+        if removed_g[2] != None:
+            find_ing = sum(removed_g[2],[])
+            if find_ing==sort_arr:
+                if not str(find_ing) in my_manager:
+                    new_edge_list_x = X_cal(arr)
+                    x_array = np.array(X_cal(for_find))
+                    x_prod = [prod(item-x_array[index+1:]) for index,item in enumerate(x_array)]
+                    z = prod([ prod( map(lambda n: item-n , new_edge_list_x[index+1:]))/x_prod[index] for index,item in enumerate(new_edge_list_x)])
+                    my_manager[str(find_ing)] = z/abs(z)
+finish = False
 G_name="A"
+
 # print(all_num_record)
 for order in range(1,len(all_num_record)-1):
     table =  [[[] for i in range(len(all_num_record[order])-1)] for i in range(len(all_num_record[order+1]))]
     for removed_g in all_remove_g[order]:
-        # print removed_g
-        if removed_g[2] != None:
-            find_ing = sum(removed_g[2],[])
-            for index,item in enumerate(all_num_record[order+1][1:]):
-            # for index,item in enumerate(all_npresult[order+1]):
-                index_n = all_num_record[order+1][1:index+2].count(item)
-                file = chr(ord(G_name)+order+1)
-                if item==-1:
-                    file += "N"
-                file += "("+str(index_n)+")"
-                with open("temp/"+file+".pkl","rb") as open_file:
-                    the_file = load(open_file).tolist()
-                    if find_ing in the_file:
-                        with open("temp/"+file+"z.pkl","rb") as open_file_z:
-                            the_file_z = load(open_file_z)
-                            for index_y,item_y in enumerate(the_file):
-                                if item_y==find_ing:
-                                    # print(index,index_n,index_y)
-                                    table[index][removed_g[0]].append([removed_g[1]+1,removed_g[3],the_file_z[index_y]])
-                                    break
-        else :
+        if removed_g[2] == None:
             table[-1][removed_g[0]].append(removed_g[1]+1)
 
+    for indexG,itemG in enumerate(all_G_result[order]):
+        for_find = sum(itemG.tolist(),[])
+        print(indexG,end='\r')
+        my_manager = Manager().dict()
+        with Pool(cpus) as pool:
+            pool.map_async( r2, permutations(range(max(for_find))))
+            pool.close()
+            pool.join()
+
+        for removed_g in all_remove_g[order]:
+            if removed_g[2] != None:
+                find_ing = str(sum(removed_g[2],[]))
+                if find_ing in my_manager:
+                    table[indexG][removed_g[0]].append([removed_g[1]+1,removed_g[3],my_manager[find_ing]])
+
     columns=[]
+    print("                                ")
     N = 0
     for i in range(1,len(all_num_record[order])):
         if all_num_record[order][i] == 1:
@@ -402,8 +343,8 @@ for order in range(1,len(all_num_record)-1):
             N +=1
             index.append(chr(ord(G_name)+order+1)+"N"+str(N))
     index.append("0")
-    # df =pd.DataFrame(table,index=index,columns=columns)
-    # print (df)
+    #df =pd.DataFrame(table,index=index,columns=columns)
+    #print (df)
     sort_indx = []
     row_table = []
     for g_num in range(len(all_num_record[order+1])-1):
@@ -485,13 +426,3 @@ for order in range(1,len(all_num_record)-1):
 
 
 print (time.time()-total_time)
-
-
-
-#########################################show graph
-# print("node",G.number_of_nodes())
-# print("edges",G.number_of_edges())
-# print(G.nodes)
-# print(G.edges)
-# nx.draw(G, with_labels=True, font_weight='bold')
-# plt.show()
